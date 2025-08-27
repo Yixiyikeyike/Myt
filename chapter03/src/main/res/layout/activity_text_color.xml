@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tv_code_system"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="代码设置系统自带颜色"
+        android:textSize="17sp">
+    </TextView>
+
+    <TextView
+        android:id="@+id/tv_code_eight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="代码设置八位颜色"
+        android:textSize="17sp">
+    </TextView>
+
+    <TextView
+        android:id="@+id/tv_code_six"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="代码设置六位颜色"
+        android:textSize="17sp">
+    </TextView>
+
+    <TextView
+        android:id="@+id/tv_xml"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="xml设置六位颜色"
+        android:textSize="17sp"
+        android:textColor="#00ff00">
+    </TextView>
+
+    <TextView
+        android:id="@+id/tv_values"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="资源文件定义六位颜色"
+        android:textSize="17sp"
+        android:textColor="@color/green">
+    </TextView>
+
+    <TextView
+        android:id="@+id/tv_background"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="背景设置颜色"
+        android:textSize="17sp"
+        android:textColor="@color/black"
+        >
+<!--        android:background="@color/green"-->
+    </TextView>
+</LinearLayout>

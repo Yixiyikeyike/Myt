@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+    <!-- 响应按钮 -->
+    <Button
+        android:id="@+id/btn_response"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="返回应答消息"
+        android:layout_marginTop="16dp"/>
+    <!-- 请求信息显示区域 -->
+    <TextView
+        android:id="@+id/tv_request"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:textSize="16sp"
+        android:text="请求信息显示在这里"/>
+
+    <!-- 响应信息显示区域 -->
+    <TextView
+        android:id="@+id/tv_response"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:textSize="16sp"
+        android:text="待返回消息显示在这里"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:textSize="16sp"
+        android:text="如果你看到这个，说明刷新了"/>
+
+
+
+
+</LinearLayout>

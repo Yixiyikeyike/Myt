@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ButtonClickActivity">
+    <Button
+        android:id="@+id/btn_click_single"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="点击指定的监听器按钮"
+        android:textColor="#000000"
+        android:textSize="15sp"/>
+    <Button
+        android:id="@+id/btn_click_public"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="点击公共的监听器按钮"
+        android:textColor="#000000"
+        android:textSize="15sp"/>
+    <TextView
+        android:id="@+id/tv_result"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="5dp"
+        android:textSize="15dp"
+        android:textColor="#000000"/>
+</LinearLayout>

@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Chapter03</string>
+    <string name="hello">你好，世界</string>
+    <string name="calculate">简易计算器</string>
+    <string name="cancel">CE</string>
+    <string name="chu">÷</string>
+    <string name="chen">×</string>
+    <string name="guiling">C</string>
+    <string name="jia">+</string>
+    <string name="jian">-</string>
+    <string name="dian">.</string>
+    <string name="dengyu">=</string>
+    <string name="fenshu">1/X</string>
+    <string name="seven">7</string>
+    <string name="eight">8</string>
+    <string name="nine">9</string>
+    <string name="four">4</string>
+    <string name="five">5</string>
+    <string name="six">6</string>
+    <string name="one">1</string>
+    <string name="two">2</string>
+    <string name="three">3</string>
+    <string name="zero">0</string>
+</resources>
