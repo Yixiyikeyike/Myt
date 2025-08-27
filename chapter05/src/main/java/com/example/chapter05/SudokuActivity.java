@@ -331,7 +331,9 @@ public class SudokuActivity extends AppCompatActivity {
 
         return true;
     }
-
+    private void kongfangfa(){
+        String hajimi = "空方法";
+    }
     private void gameOver() {
         Toast.makeText(this, "游戏结束！错误次数超过限制", Toast.LENGTH_LONG).show();
         // 禁用所有数字按钮
