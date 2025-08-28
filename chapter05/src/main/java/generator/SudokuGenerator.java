@@ -54,6 +54,7 @@ public class SudokuGenerator {
     }
 
     // 递归解决数独
+    // 递归解决数独（确保不修改预填数字）
     private static boolean solveSudoku(int[][] board, int row, int col) {
         if (row == 9) {
             return true;
@@ -63,6 +64,7 @@ public class SudokuGenerator {
             return solveSudoku(board, row + 1, 0);
         }
 
+        // 跳过预填数字
         if (board[row][col] != 0) {
             return solveSudoku(board, row, col + 1);
         }
@@ -198,4 +200,20 @@ public class SudokuGenerator {
             System.out.println();
         }
     }
+    public static int[][] generateSolutionForPuzzle(int[][] predefinedValues) {
+        int[][] board = new int[9][9];
+
+        // 应用预填数字
+        for (int[] predefined : predefinedValues) {
+            int row = predefined[0];
+            int col = predefined[1];
+            int value = predefined[2];
+            board[row][col] = value;
+        }
+
+        // 解决剩余部分
+        solveSudoku(board, 0, 0);
+        return board;
+    }
+
 }

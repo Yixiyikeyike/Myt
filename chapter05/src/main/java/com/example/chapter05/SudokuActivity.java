@@ -78,7 +78,6 @@ public class SudokuActivity extends AppCompatActivity {
 
     private void initializeSudokuData() {
         sudokuData = new int[9][9];
-        fullSolution = SudokuGenerator.generateSolution(); // 生成完整解决方案
 
         // 初始化所有格子为0（空白）
         for (int i = 0; i < 9; i++) {
@@ -96,7 +95,10 @@ public class SudokuActivity extends AppCompatActivity {
             fixedCells++;
         }
 
-        filledCells = fixedCells; // 初始时已填格子数等于预填格子数
+        // 生成与预填数字匹配的解决方案
+        fullSolution = SudokuGenerator.generateSolutionForPuzzle(predefinedValues);
+
+        filledCells = fixedCells;
     }
     // 添加难度选择功能
     public void setDifficulty(int difficulty) {
@@ -219,6 +221,11 @@ public class SudokuActivity extends AppCompatActivity {
     private void showFullSolution() {
         if (fullSolution == null) return;
 
+        // 验证解决方案是否正确
+        if (!isSolutionValid(fullSolution)) {
+            Toast.makeText(this, "解决方案无效，请重新生成", Toast.LENGTH_LONG).show();
+            return;
+        }
         // 遍历所有格子
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
@@ -242,6 +249,47 @@ public class SudokuActivity extends AppCompatActivity {
         }
 
         Toast.makeText(this, "已显示完整解决方案", Toast.LENGTH_SHORT).show();
+    }
+
+    // 验证解决方案是否符合数独规则
+    private boolean isSolutionValid(int[][] solution) {
+        // 检查所有行
+        for (int row = 0; row < 9; row++) {
+            Set<Integer> rowSet = new HashSet<>();
+            for (int col = 0; col < 9; col++) {
+                if (!rowSet.add(solution[row][col])) {
+                    return false;
+                }
+            }
+        }
+
+        // 检查所有列
+        for (int col = 0; col < 9; col++) {
+            Set<Integer> colSet = new HashSet<>();
+            for (int row = 0; row < 9; row++) {
+                if (!colSet.add(solution[row][col])) {
+                    return false;
+                }
+            }
+        }
+
+        // 检查所有3x3宫格
+        for (int boxRow = 0; boxRow < 3; boxRow++) {
+            for (int boxCol = 0; boxCol < 3; boxCol++) {
+                Set<Integer> boxSet = new HashSet<>();
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        int actualRow = boxRow * 3 + i;
+                        int actualCol = boxCol * 3 + j;
+                        if (!boxSet.add(solution[actualRow][actualCol])) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     // 隐藏解决方案提示，恢复用户输入

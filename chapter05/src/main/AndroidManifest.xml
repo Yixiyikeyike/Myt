@@ -8,12 +8,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Myt">
-<!--        <activity-->
-<!--            android:name=".SudokuActivity"-->
-<!--            android:exported="false" />-->
-<!--        <activity-->
-<!--            android:name=".Sudu"-->
-<!--            android:exported="false" /> &lt;!&ndash; <activity &ndash;&gt;-->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
+        <!-- <activity -->
+        <!-- android:name=".SudokuActivity" -->
+        <!-- android:exported="false" /> -->
+        <!-- <activity -->
+        <!-- android:name=".Sudu" -->
+        <!-- android:exported="false" /> &lt;!&ndash; <activity &ndash;&gt; -->
         <!-- android:name=".EditBorderActivity" -->
         <!-- android:exported="false" /> -->
         <!-- <activity -->
