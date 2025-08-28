@@ -23,7 +23,7 @@ public class LoginActivity extends AppCompatActivity {
         // 检查是否已有用户名
         String savedUsername = SharedPreferencesUtil.getUsername(this);
         if (savedUsername != null && !savedUsername.isEmpty()) {
-            startSudokuActivity(savedUsername);
+            startUserMsgActivity(savedUsername);
             return;
         }
 
@@ -53,13 +53,13 @@ public class LoginActivity extends AppCompatActivity {
             // 保存用户名
             SharedPreferencesUtil.saveUsername(this, username);
 
-            // 启动数独游戏
-            startSudokuActivity(username);
+            // 启动用户信息界面
+            startUserMsgActivity(username);
         });
     }
 
-    private void startSudokuActivity(String username) {
-        Intent intent = new Intent(this, SudokuActivity.class);
+    private void startUserMsgActivity(String username) {
+        Intent intent = new Intent(this, UserMsgActivity.class);
         intent.putExtra("username", username);
         startActivity(intent);
         finish(); // 关闭登录界面
