@@ -36,7 +36,7 @@ public class SudokuActivity extends AppCompatActivity {
     private int filledCells = 0;
     private final int TOTAL_CELLS = 81;
     private int fixedCells = 0; // 预填的格子数量
-
+    private int[][] fullSolution; // 存储完整解决方案
     // 预填数字的位置
     private int[][] predefinedValues;
 
@@ -78,6 +78,7 @@ public class SudokuActivity extends AppCompatActivity {
 
     private void initializeSudokuData() {
         sudokuData = new int[9][9];
+        fullSolution = SudokuGenerator.generateSolution(); // 生成完整解决方案
 
         // 初始化所有格子为0（空白）
         for (int i = 0; i < 9; i++) {
@@ -86,7 +87,7 @@ public class SudokuActivity extends AppCompatActivity {
             }
         }
 
-        // 设置预填数字并计数
+        // 根据预定义值设置谜题
         for (int[] predefined : predefinedValues) {
             int row = predefined[0];
             int col = predefined[1];
@@ -195,7 +196,81 @@ public class SudokuActivity extends AppCompatActivity {
     }
 
     private void setupFunctionButtons() {
-        // 功能按钮实现
+        // 提示按钮（显示完整解决方案）
+        Button hintButton = findViewById(R.id.btn_hint);
+        hintButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showFullSolution();
+            }
+        });
+
+        // 关闭提示按钮（隐藏提示，恢复用户输入）
+        Button closeHintButton = findViewById(R.id.btn_hint_close);
+        closeHintButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hideSolutionHint();
+            }
+        });
+    }
+
+    // 显示完整解决方案
+    private void showFullSolution() {
+        if (fullSolution == null) return;
+
+        // 遍历所有格子
+        for (int row = 0; row < 9; row++) {
+            for (int col = 0; col < 9; col++) {
+                TextView cell = cellViews.get(row + "_" + col);
+                if (cell != null && !"fixed".equals(cell.getTag())) {
+                    // 保存当前用户输入的值（如果有）
+                    if (cell.getText().length() > 0 && !"hint".equals(cell.getTag())) {
+                        sudokuData[row][col] = Integer.parseInt(cell.getText().toString());
+                    }
+                    // 显示解决方案
+                    cell.setText(String.valueOf(fullSolution[row][col]));
+                    cell.setTextColor(Color.RED); // 用红色显示提示
+                    cell.setTag("hint"); // 标记为提示
+                }
+            }
+        }
+
+        // 禁用数字按钮，防止覆盖提示
+        for (Button btn : numberButtons) {
+            btn.setEnabled(false);
+        }
+
+        Toast.makeText(this, "已显示完整解决方案", Toast.LENGTH_SHORT).show();
+    }
+
+    // 隐藏解决方案提示，恢复用户输入
+    private void hideSolutionHint() {
+        // 遍历所有格子
+        for (int row = 0; row < 9; row++) {
+            for (int col = 0; col < 9; col++) {
+                TextView cell = cellViews.get(row + "_" + col);
+                if (cell != null && "hint".equals(cell.getTag())) {
+                    // 清除提示标记
+                    cell.setTag(null);
+
+                    // 恢复用户输入或清空
+                    if (sudokuData[row][col] != 0) {
+                        cell.setText(String.valueOf(sudokuData[row][col]));
+                        cell.setTextColor(Color.BLUE);
+                    } else {
+                        cell.setText("");
+                    }
+                }
+            }
+        }
+
+        // 重新启用数字按钮
+        for (Button btn : numberButtons) {
+            btn.setEnabled(true);
+        }
+
+        Toast.makeText(this, "已隐藏解决方案，恢复游戏", Toast.LENGTH_SHORT).show();
     }
 
     private void onCellSelected(int row, int col) {
@@ -375,4 +450,5 @@ public class SudokuActivity extends AppCompatActivity {
             }
         }).start();
     }
+
 }
