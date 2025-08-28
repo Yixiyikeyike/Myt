@@ -1,5 +1,6 @@
 package com.example.chapter05;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -9,6 +10,8 @@ import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -214,6 +217,23 @@ public class SudokuActivity extends AppCompatActivity {
             public void onClick(View v) {
                 hideSolutionHint();
             }
+        });
+        // 返回主界面按钮
+        Button returnButton = findViewById(R.id.btn_return);
+        returnButton.setOnClickListener(v -> {
+            // 确认对话框
+            new AlertDialog.Builder(this)
+                    .setTitle("确认退出")
+                    .setMessage("确定要返回主界面吗？当前游戏进度将丢失")
+                    .setPositiveButton("确定", (dialog, which) -> {
+                        // 返回UserMsgActivity
+                        Intent intent = new Intent(this, UserMsgActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
+                        finish();
+                    })
+                    .setNegativeButton("取消", null)
+                    .show();
         });
     }
 
@@ -468,9 +488,17 @@ public class SudokuActivity extends AppCompatActivity {
         long elapsedTime = SystemClock.elapsedRealtime() - startTime;
         long minutes = (elapsedTime / 1000) / 60;
         long seconds = (elapsedTime / 1000) % 60;
+        String formattedTime = String.format("%02d:%02d", minutes, seconds);
 
-        Toast.makeText(this, "恭喜你赢了！用时: " + minutes + "分" + seconds + "秒",
-                Toast.LENGTH_LONG).show();
+        // 计算获得的星星 (3 - 错误次数)
+        int starsEarned = MAX_ERRORS - errorCount;
+
+        // 启动结算界面
+        Intent intent = new Intent(this, SingleSucceedActivity.class);
+        intent.putExtra("stars", starsEarned);
+        intent.putExtra("time", formattedTime);
+        startActivity(intent);
+        finish();
     }
 
     private void startTimer() {
