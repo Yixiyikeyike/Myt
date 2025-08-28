@@ -8,6 +8,14 @@
     android:background="#FFFFFF">
 
     <TextView
+        android:id="@+id/tv_score"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:textColor="#2196F3"
+        android:layout_marginBottom="24dp"/>
+
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="恭喜通关！"
