@@ -28,4 +28,7 @@
     <string name="try_again">再接再厉</string>
     <string name="score_zero">本次得分: 0</string>
     <string name="retry">再试一次</string>
+    <string name="current_score">本次得分: %d</string>
+    <string name="high_score">最高分: %d</string>
+    <string name="new_record">新纪录!</string>
 </resources>

@@ -208,6 +208,8 @@ public class SudokuActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 showFullSolution();
+                //作弊按钮，直接判定获胜
+                gameWin();
             }
         });
 

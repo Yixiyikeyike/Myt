@@ -13,7 +13,25 @@
         android:layout_height="wrap_content"
         android:textSize="24sp"
         android:textColor="#2196F3"
-        android:layout_marginBottom="24dp"/>
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/tv_high_score"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:textColor="#9E9E9E"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/tv_new_record"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="新纪录!"
+        android:textSize="20sp"
+        android:textColor="#FF5722"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone"/>
 
     <TextView
         android:layout_width="wrap_content"

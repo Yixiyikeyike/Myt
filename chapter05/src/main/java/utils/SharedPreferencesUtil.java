@@ -91,4 +91,27 @@ public class SharedPreferencesUtil {
         public double getScore() { return score; }
         public long getTimestamp() { return timestamp; }
     }
+    private static final String KEY_HIGH_SCORE = "high_score";
+
+    // 保存最高分
+    public static void saveHighScore(Context context, int score) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putInt(KEY_HIGH_SCORE, score).apply();
+    }
+
+    // 获取最高分
+    public static int getHighScore(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getInt(KEY_HIGH_SCORE, 0);
+    }
+
+    // 检查并更新最高分
+    public static boolean checkAndUpdateHighScore(Context context, int score) {
+        int currentHigh = getHighScore(context);
+        if (score > currentHigh) {
+            saveHighScore(context, score);
+            return true;
+        }
+        return false;
+    }
 }

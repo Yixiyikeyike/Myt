@@ -1,5 +1,6 @@
 package com.example.chapter05;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -9,6 +10,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,15 +27,57 @@ public class SingleSucceedActivity extends AppCompatActivity {
     private TextView tvTime;
     private TextView tvScore;
     private Button btnBack;
+    private TextView tvHighScore;
+    private TextView tvNewRecord;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_succeed);
 
+        // 初始化视图
+        tvScore = findViewById(R.id.tv_score);
+        tvHighScore = findViewById(R.id.tv_high_score);
+        tvNewRecord = findViewById(R.id.tv_new_record);
+
+        // 获取游戏数据
+        int stars = getIntent().getIntExtra("stars", 0);
+        String time = getIntent().getStringExtra("time");
+
+        // 计算本次得分 (简单示例: 星星数 * 1000 - 秒数 * 10)
+        int score = calculateScore(stars, time);
+
+        // 获取当前最高分
+        int highScore = SharedPreferencesUtil.getHighScore(this);
+
+        // 检查并更新最高分
+        boolean isNewRecord = SharedPreferencesUtil.checkAndUpdateHighScore(this, score);
+
+        // 显示分数
+        tvScore.setText("本次得分: " + score);
+        tvHighScore.setText("最高分: " + Math.max(score, highScore)/10);
+
+        // 如果是新纪录，显示提示
+        if (isNewRecord) {
+            tvNewRecord.setVisibility(View.VISIBLE);
+        }
+
         initViews();
         setupViews();
         setupListeners();
+    }
+    private int calculateScore(int stars, String time) {
+        // 简单评分算法: 星星数 * 1000 - 秒数 * 10
+        int seconds = (int) convertTimeToSeconds(time);
+        return stars * 1000 - seconds * 10;
+    }
+
+    private long convertTimeToSeconds(String time) {
+        String[] parts = time.split(":");
+        long minutes = Long.parseLong(parts[0]);
+        long seconds = Long.parseLong(parts[1]);
+        return minutes * 60 + seconds;
     }
 
     private void initViews() {
@@ -63,12 +107,7 @@ public class SingleSucceedActivity extends AppCompatActivity {
         tvScore.setText(String.format("本次得分: %.1f", score));
     }
 
-    private long convertTimeToSeconds(String time) {
-        String[] parts = time.split(":");
-        long minutes = Long.parseLong(parts[0]);
-        long seconds = Long.parseLong(parts[1]);
-        return minutes * 60 + seconds;
-    }
+
 
     private void setupListeners() {
         btnBack.setOnClickListener(v -> {
@@ -79,4 +118,5 @@ public class SingleSucceedActivity extends AppCompatActivity {
             finish();
         });
     }
+
 }
