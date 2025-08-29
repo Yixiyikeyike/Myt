@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 
 import generator.SudokuGenerator;
+import utils.SharedPreferencesUtil;
 
 public class SudokuActivity extends AppCompatActivity {
 
@@ -218,14 +219,17 @@ public class SudokuActivity extends AppCompatActivity {
                 hideSolutionHint();
             }
         });
-        // 返回主界面按钮
+// 返回主界面按钮
         Button returnButton = findViewById(R.id.btn_return);
         returnButton.setOnClickListener(v -> {
-            // 确认对话框
             new AlertDialog.Builder(this)
                     .setTitle("确认退出")
                     .setMessage("确定要返回主界面吗？当前游戏进度将丢失")
                     .setPositiveButton("确定", (dialog, which) -> {
+                        // 记录中途退出 (得分为0)
+                        SharedPreferencesUtil.saveGameRecord(this,
+                                new SharedPreferencesUtil.GameRecord(0, "00:00", 0));
+
                         // 返回UserMsgActivity
                         Intent intent = new Intent(this, UserMsgActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -476,12 +480,15 @@ public class SudokuActivity extends AppCompatActivity {
     }
 
     private void gameOver() {
-        Toast.makeText(this, "游戏结束！错误次数超过限制", Toast.LENGTH_LONG).show();
         // 禁用所有数字按钮
         for (Button btn : numberButtons) {
             btn.setEnabled(false);
         }
-        // 可以添加重新开始游戏的逻辑
+
+        // 启动失败界面
+        Intent intent = new Intent(this, SingleFailedActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     private void gameWin() {

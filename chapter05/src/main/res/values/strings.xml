@@ -25,4 +25,7 @@
     <string name="cancel">取消</string>
     <string name="score_earned">本次得分: %.1f</string>
     <string name="average_score">平均得分: %.1f</string>
+    <string name="try_again">再接再厉</string>
+    <string name="score_zero">本次得分: 0</string>
+    <string name="retry">再试一次</string>
 </resources>

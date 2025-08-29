@@ -9,6 +9,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Myt" >
         <activity
+            android:name=".SingleFailedActivity"
+            android:screenOrientation="portrait"/>
+        <activity
             android:name=".SingleSucceedActivity"
             android:exported="false" />
         <activity
