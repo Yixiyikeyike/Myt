@@ -147,7 +147,7 @@ public class SudokuGenerator {
     }
 
     // 将数独板转换为预定义值格式
-    private static int[][] convertToPredefinedFormat(int[][] puzzle) {
+    public static int[][] convertToPredefinedFormat(int[][] puzzle) {
         int count = 0;
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
