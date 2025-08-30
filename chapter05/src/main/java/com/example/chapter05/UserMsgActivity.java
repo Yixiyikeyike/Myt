@@ -18,6 +18,8 @@ public class UserMsgActivity extends AppCompatActivity {
     private Button btnSingleMode;
     private Button btnBluetoothMode;
     private Button btnLogout;
+    private TextView tvHighScore;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +38,7 @@ public class UserMsgActivity extends AppCompatActivity {
         btnSingleMode = findViewById(R.id.btn_single_mode);
         btnBluetoothMode = findViewById(R.id.btn_bluetooth_mode);
         btnLogout = findViewById(R.id.btn_logout);
+        tvHighScore = findViewById(R.id.tv_high_score);
     }
 
     private void setupViews() {
@@ -52,6 +55,17 @@ public class UserMsgActivity extends AppCompatActivity {
             // 计算并显示平均分
             double averageScore = SharedPreferencesUtil.calculateAverageScore(this);
             tvAverageScore.setText(String.format("平均得分: %.1f", averageScore));
+        } else {
+            // 如果没有用户名，返回登录界面
+            goToLoginActivity();
+        }
+        if (username != null && !username.isEmpty()) {
+            tvWelcome.setText(getString(R.string.welcome_back));
+            tvUsername.setText(getString(R.string.username_label, username));
+
+            // 显示最高分
+            int highScore = SharedPreferencesUtil.getHighScore(this);
+            tvHighScore.setText(String.format("最高分: %d", highScore/10));
         } else {
             // 如果没有用户名，返回登录界面
             goToLoginActivity();

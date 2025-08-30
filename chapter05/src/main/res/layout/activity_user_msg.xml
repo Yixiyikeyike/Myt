@@ -29,6 +29,13 @@
         android:textSize="18sp"
         android:textColor="#4CAF50"
         android:layout_marginBottom="24dp"/>
+    <TextView
+        android:id="@+id/tv_high_score"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:textColor="#4CAF50"
+        android:layout_marginBottom="24dp"/>
 
     <Button
         android:id="@+id/btn_single_mode"

@@ -119,4 +119,5 @@ public class SingleSucceedActivity extends AppCompatActivity {
         });
     }
 
+
 }
