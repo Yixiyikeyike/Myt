@@ -13,6 +13,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Myt">
         <activity
+            android:name=".BluetoothMatchSucceedActivity"
+            android:exported="false" />
+        <activity
+            android:name=".BluetoothMatchFailedActivity"
+            android:exported="false" />
+        <activity
             android:name=".HereIsNothingActivity"
             android:exported="false" />
         <activity

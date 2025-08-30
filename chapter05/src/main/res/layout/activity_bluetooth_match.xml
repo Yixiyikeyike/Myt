@@ -10,6 +10,17 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- 状态信息区域 -->
+        <TextView
+            android:id="@+id/status_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:text="等待连接..."
+            android:gravity="center"
+            android:layout_marginBottom="16dp"/>
+
         <!-- 连接信息区域 -->
         <TextView
             android:id="@+id/tv_my_ip"
@@ -81,18 +92,64 @@
                 android:layout_height="wrap_content"
                 android:text="对方进度: 0/81"/>
 
-            <TextView
-                android:id="@+id/tv_my_stars"
+            <!-- 错误计数区域 -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="我的星星: ☆3"/>
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
 
-            <TextView
-                android:id="@+id/tv_opponent_stars"
+                <TextView
+                    android:id="@+id/error_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="你: 0/3"
+                    android:textSize="16sp"/>
+
+                <TextView
+                    android:id="@+id/opponent_error_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="对手: 0/3"
+                    android:textSize="16sp"/>
+            </LinearLayout>
+
+            <!-- 星星计数区域 -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="对方星星: ☆3"/>
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+
+                <TextView
+                    android:id="@+id/tv_my_stars"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="我的星星: ☆3"
+                    android:textSize="16sp"/>
+
+                <TextView
+                    android:id="@+id/tv_opponent_stars"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="对方星星: ☆3"
+                    android:textSize="16sp"/>
+            </LinearLayout>
         </LinearLayout>
+
+        <!-- 计时器显示 -->
+        <TextView
+            android:id="@+id/timer_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="00:00"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:layout_marginBottom="16dp"/>
 
         <!-- 聊天区域 -->
         <TextView
@@ -126,13 +183,115 @@
             android:text="开始游戏"
             android:layout_marginBottom="16dp"/>
 
-        <!-- 数独游戏区域 (占位) -->
-        <TextView
+        <!-- 数独游戏区域  -->
+        <!-- 数独网格 -->
+        <GridLayout
+            android:id="@+id/sudoku_grid"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:text="数独游戏区域将在这里显示"
-            android:gravity="center"
-            android:background="#EEEEEE"
-            android:textSize="16sp"/>
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:columnCount="9"
+            android:rowCount="9"
+            android:background="#000000"/>
+
+        <!-- 数字按钮 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp">
+
+            <Button
+                android:id="@+id/btn_1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1"/>
+
+            <Button
+                android:id="@+id/btn_2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="2"/>
+
+            <Button
+                android:id="@+id/btn_3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="3"/>
+
+            <Button
+                android:id="@+id/btn_4"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="4"/>
+
+            <Button
+                android:id="@+id/btn_5"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="5"/>
+
+            <Button
+                android:id="@+id/btn_6"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="6"/>
+
+            <Button
+                android:id="@+id/btn_7"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="7"/>
+
+            <Button
+                android:id="@+id/btn_8"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="8"/>
+
+            <Button
+                android:id="@+id/btn_9"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="9"/>
+        </LinearLayout>
+
+        <!-- 功能按钮 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp">
+
+            <Button
+                android:id="@+id/btn_hint"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="提示"/>
+
+            <Button
+                android:id="@+id/btn_hint_close"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="关闭提示"/>
+
+            <Button
+                android:id="@+id/btn_return"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="返回"/>
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>
