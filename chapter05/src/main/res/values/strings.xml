@@ -31,4 +31,19 @@
     <string name="current_score">本次得分: %d</string>
     <string name="high_score">最高分: %d</string>
     <string name="new_record">新纪录!</string>
+    <string name="enter_ip">请输入目标IP地址</string>
+    <string name="connecting">尝试连接: %1$s</string>
+    <string name="waiting_for_players">等待其他玩家连接...</string>
+    <string name="my_ip">本机IP: %1$s</string>
+    <string name="input_ip_hint">输入对方IP地址:</string>
+    <string name="connect">连接</string>
+    <string name="or">或</string>
+    <string name="host_game">创建房间</string>
+    <string name="connection_success">连接成功!</string>
+    <string name="connection_failed">连接失败: %1$s</string>
+    <string name="waiting_for_connection">等待连接中...</string>
+    <string name="player_connected">玩家已连接!</string>
+    <string name="server_error">服务器错误: %1$s</string>
+    <string name="input_message_hint">输入消息...</string>
+    <string name="send">发送</string>
 </resources>

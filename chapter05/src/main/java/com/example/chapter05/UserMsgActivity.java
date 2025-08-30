@@ -82,8 +82,13 @@ public class UserMsgActivity extends AppCompatActivity {
         });
 
         // 蓝牙联机模式按钮
+//        btnBluetoothMode.setOnClickListener(v -> {
+//            Toast.makeText(this, R.string.bluetooth_developing, Toast.LENGTH_SHORT).show();
+//        });
         btnBluetoothMode.setOnClickListener(v -> {
-            Toast.makeText(this, R.string.bluetooth_developing, Toast.LENGTH_SHORT).show();
+            // 跳转到局域网匹配界面
+            Intent intent = new Intent(this, BluetoothMatchActivity.class);
+            startActivity(intent);
         });
 
         // 退出登录按钮
