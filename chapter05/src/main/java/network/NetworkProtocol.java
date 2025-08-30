@@ -7,9 +7,13 @@ public class NetworkProtocol {
     public static final String TYPE_GAME_START = "GAME_START";
     public static final String TYPE_GAME_OVER = "GAME_OVER";
     public static final String TYPE_ERROR = "ERROR";
-
+    public static final String TYPE_GAME_DATA = "GAME_DATA";
+    public static final String TYPE_STARS = "STARS";
+    public static final String TYPE_PROGRESS = "PROGRESS";
     // 分隔符
     public static final String DELIMITER = "|";
+    public static final String TYPE_READY = "READY";
+    public static final String TYPE_START_GAME = "START_GAME";
 
     public static String createMessage(String type, String data) {
         return type + DELIMITER + data;

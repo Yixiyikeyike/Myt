@@ -91,4 +91,17 @@
             android:text="发送"
             android:enabled="false"/>
     </LinearLayout>
+    <!-- 在原有布局的聊天区域下方添加按钮 -->
+
+    <!-- 修改开始游戏按钮的初始状态 -->
+    <Button
+        android:id="@+id/btn_start_game"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="准备进入游戏"
+        android:textSize="18sp"
+        android:backgroundTint="#4CAF50"
+        android:textColor="#FFFFFF"
+        android:layout_marginTop="16dp"
+        android:enabled="true"/> <!-- 初始状态改为可点击 -->
 </LinearLayout>

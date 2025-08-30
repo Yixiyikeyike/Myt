@@ -1,10 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MultiplayerSudokuActivity">
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#FFFFFF">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- 对手信息栏 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:id="@+id/tv_opponent_stars"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="对方星星: 3"
+            android:textSize="16sp"
+            android:layout_marginEnd="16dp"/>
+
+        <TextView
+            android:id="@+id/tv_opponent_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="对方进度: 0/81"
+            android:textSize="16sp"/>
+    </LinearLayout>
+
+    <!-- 数独网格 (复用单机版的GridLayout) -->
+    <!-- 数独网格容器 - 9x9 GridLayout -->
+    <!-- 数独网格容器 - 自适应正方形 -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:paddingHorizontal="16dp">
+
+        <GridLayout
+            android:id="@+id/sudoku_grid"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:rowCount="9"
+            android:columnCount="9"
+            android:background="#000000"
+            android:padding="2dp"/>
+    </FrameLayout>
+
+    <!-- 数字选择按钮 (复用单机版的按钮布局) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp"
+        android:gravity="center">
+        <Button
+            android:id="@+id/btn_1"
+            android:text="1"
+            style="@style/SudokuNumberButton"/>
+
+        <Button
+            android:id="@+id/btn_2"
+            android:text="2"
+            style="@style/SudokuNumberButton"/>
+
+        <Button
+            android:id="@+id/btn_3"
+            android:text="3"
+            style="@style/SudokuNumberButton"/>
+
+        <Button
+            android:id="@+id/btn_4"
+            android:text="4"
+            style="@style/SudokuNumberButton"/>
+
+        <Button
+            android:id="@+id/btn_5"
+            android:text="5"
+            style="@style/SudokuNumberButton"/>
+
+
+    </LinearLayout>
+</LinearLayout>
