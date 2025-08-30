@@ -1,107 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="#FFFFFF"
-    android:gravity="center">
-
-    <TextView
-        android:id="@+id/tv_my_ip"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:textColor="#000000"
-        android:layout_marginBottom="24dp"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="输入对方IP地址:"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp"/>
-
-    <EditText
-        android:id="@+id/et_target_ip"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="192.168.x.x"
-        android:inputType="number|text"
-        android:imeOptions="actionDone"
-        android:layout_marginBottom="24dp"/>
-
-    <Button
-        android:id="@+id/btn_connect"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="连接"
-        android:textSize="18sp"
-        android:backgroundTint="#6200EE"
-        android:textColor="#FFFFFF"
-        android:layout_marginBottom="16dp"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="或"
-        android:textSize="16sp"
-        android:layout_marginBottom="16dp"/>
-
-    <Button
-        android:id="@+id/btn_host_game"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="创建房间"
-        android:textSize="18sp"
-        android:backgroundTint="#03DAC6"
-        android:textColor="#FFFFFF"/>
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp">
-
-        <TextView
-            android:id="@+id/tv_chat"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:textColor="#000000"/>
-    </ScrollView>
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- 连接信息区域 -->
+        <TextView
+            android:id="@+id/tv_my_ip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp"/>
+
+        <EditText
+            android:id="@+id/et_target_ip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="输入目标IP地址"
+            android:inputType="text"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <Button
+                android:id="@+id/btn_connect"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="连接"/>
+
+            <Button
+                android:id="@+id/btn_host_game"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="创建游戏"/>
+        </LinearLayout>
+
+        <!-- 游戏信息显示区域 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#F0F0F0"
+            android:padding="8dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="游戏信息"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/tv_game_seed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="随机种子: 未生成"/>
+
+            <TextView
+                android:id="@+id/tv_my_progress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="我的进度: 0/81"/>
+
+            <TextView
+                android:id="@+id/tv_opponent_progress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="对方进度: 0/81"/>
+
+            <TextView
+                android:id="@+id/tv_my_stars"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="我的星星: ☆3"/>
+
+            <TextView
+                android:id="@+id/tv_opponent_stars"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="对方星星: ☆3"/>
+        </LinearLayout>
+
+        <!-- 聊天区域 -->
+        <TextView
+            android:id="@+id/tv_chat"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:background="#E0E0E0"
+            android:scrollbars="vertical"
+            android:textSize="14sp"/>
 
         <EditText
             android:id="@+id/et_message"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="输入消息..."
-            android:enabled="false"/>
+            android:hint="输入消息"
+            android:inputType="text"
+            android:layout_marginTop="8dp"/>
 
         <Button
             android:id="@+id/btn_send_message"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="发送"
-            android:enabled="false"/>
-    </LinearLayout>
-    <!-- 在原有布局的聊天区域下方添加按钮 -->
+            android:layout_marginBottom="16dp"/>
 
-    <!-- 修改开始游戏按钮的初始状态 -->
-    <Button
-        android:id="@+id/btn_start_game"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="准备进入游戏"
-        android:textSize="18sp"
-        android:backgroundTint="#4CAF50"
-        android:textColor="#FFFFFF"
-        android:layout_marginTop="16dp"
-        android:enabled="true"/> <!-- 初始状态改为可点击 -->
-</LinearLayout>
+        <!-- 游戏控制按钮 -->
+        <Button
+            android:id="@+id/btn_start_game"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="开始游戏"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 数独游戏区域 (占位) -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:text="数独游戏区域将在这里显示"
+            android:gravity="center"
+            android:background="#EEEEEE"
+            android:textSize="16sp"/>
+    </LinearLayout>
+</ScrollView>

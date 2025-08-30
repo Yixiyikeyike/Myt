@@ -17,10 +17,10 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 
 public class BluetoothMatchActivity extends AppCompatActivity {
 
+    // UI组件
     private TextView tvMyIp;
     private EditText etTargetIp;
     private Button btnConnect;
@@ -30,13 +30,28 @@ public class BluetoothMatchActivity extends AppCompatActivity {
     private TextView tvChat;
     private Button btnStartGame;
 
+    // 游戏信息显示
+    private TextView tvGameSeed;
+    private TextView tvMyProgress;
+    private TextView tvOpponentProgress;
+    private TextView tvMyStars;
+    private TextView tvOpponentStars;
+
+    // 网络连接
     private Socket socket;
     private PrintWriter out;
     private BufferedReader in;
     private boolean isHost = false;
     private boolean isConnected = false;
+
+    // 游戏状态
     private boolean isReady = false;
     private boolean opponentReady = false;
+    private long gameSeed = 0;
+    private int myProgress = 0;
+    private int opponentProgress = 0;
+    private int myStars = 3;
+    private int opponentStars = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +72,13 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         btnSendMessage = findViewById(R.id.btn_send_message);
         tvChat = findViewById(R.id.tv_chat);
         btnStartGame = findViewById(R.id.btn_start_game);
+
+        // 游戏信息视图
+        tvGameSeed = findViewById(R.id.tv_game_seed);
+        tvMyProgress = findViewById(R.id.tv_my_progress);
+        tvOpponentProgress = findViewById(R.id.tv_opponent_progress);
+        tvMyStars = findViewById(R.id.tv_my_stars);
+        tvOpponentStars = findViewById(R.id.tv_opponent_stars);
     }
 
     private void setupViews() {
@@ -66,6 +88,7 @@ public class BluetoothMatchActivity extends AppCompatActivity {
 
         enableChat(false);
         btnStartGame.setEnabled(false);
+        updateGameInfo();
     }
 
     private void setupListeners() {
@@ -81,24 +104,42 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         btnHostGame.setOnClickListener(v -> startHosting());
 
         btnSendMessage.setOnClickListener(v -> {
+            if (!isConnected) {
+                Toast.makeText(this, "未建立连接", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             String message = etMessage.getText().toString().trim();
-            if (message.isEmpty()) return;
+            if (message.isEmpty()) {
+                Toast.makeText(this, "消息不能为空", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             new Thread(() -> {
                 try {
-                    out.println("CHAT|" + message);
+                    String chatMsg = "CHAT|" + message;
+                    out.println(chatMsg);
                     out.flush();
+
                     runOnUiThread(() -> {
                         tvChat.append("我: " + message + "\n");
                         etMessage.setText("");
                     });
                 } catch (Exception e) {
-                    runOnUiThread(() -> Toast.makeText(this, "发送失败", Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "发送失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        resetConnection();
+                    });
                 }
             }).start();
         });
 
         btnStartGame.setOnClickListener(v -> {
+            if (!isConnected) {
+                Toast.makeText(this, "请先建立连接", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             isReady = true;
             btnStartGame.setEnabled(false);
             btnStartGame.setText("等待对方准备...");
@@ -107,8 +148,19 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                 try {
                     out.println("READY|1");
                     out.flush();
+
+                    // 如果是房主，生成随机种子
+                    if (isHost) {
+                        gameSeed = System.currentTimeMillis();
+                        runOnUiThread(this::updateGameInfo);
+                        out.println("SEED|" + gameSeed);
+                        out.flush();
+                    }
                 } catch (Exception e) {
-                    runOnUiThread(() -> Toast.makeText(this, "发送准备消息失败", Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "发送准备消息失败", Toast.LENGTH_SHORT).show();
+                        resetConnection();
+                    });
                 }
             }).start();
         });
@@ -118,8 +170,7 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         new Thread(() -> {
             try {
                 socket = new Socket(ip, 8888);
-                // 移除超时设置，改为0表示无限等待
-                socket.setSoTimeout(0);  // 关键修改点1
+                socket.setSoTimeout(0);
                 out = new PrintWriter(socket.getOutputStream(), true);
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
@@ -132,8 +183,6 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                     btnStartGame.setEnabled(true);
                 });
 
-                // 启动心跳检测
-                startHeartbeat();  // 关键修改点2
                 receiveMessages();
             } catch (IOException e) {
                 runOnUiThread(() -> {
@@ -155,8 +204,7 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                 });
 
                 socket = serverSocket.accept();
-                // 移除超时设置
-                socket.setSoTimeout(0);  // 关键修改点3
+                socket.setSoTimeout(0);
                 out = new PrintWriter(socket.getOutputStream(), true);
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
@@ -167,8 +215,6 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                     btnStartGame.setEnabled(true);
                 });
 
-                // 启动心跳检测
-                startHeartbeat();  // 关键修改点4
                 receiveMessages();
             } catch (IOException e) {
                 runOnUiThread(() -> {
@@ -178,30 +224,12 @@ public class BluetoothMatchActivity extends AppCompatActivity {
             }
         }).start();
     }
-    // 添加心跳检测机制
-    private void startHeartbeat() {
-        new Thread(() -> {
-            while (isConnected && socket != null && !socket.isClosed()) {
-                try {
-                    Thread.sleep(3000); // 每3秒发送一次心跳
-                    out.println("HEARTBEAT|PING");
-                    out.flush();
-                } catch (Exception e) {
-                    runOnUiThread(() -> {
-                        Toast.makeText(this, "连接已断开", Toast.LENGTH_SHORT).show();
-                        resetConnection();
-                    });
-                    break;
-                }
-            }
-        }).start();
-    }
+
     private void receiveMessages() {
         try {
             while (isConnected && socket != null && !socket.isClosed()) {
                 String received = in.readLine();
                 if (received == null) {
-                    // 对方关闭了连接
                     runOnUiThread(() -> {
                         Toast.makeText(this, "对方已断开连接", Toast.LENGTH_SHORT).show();
                         resetConnection();
@@ -225,13 +253,14 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                             opponentReady = true;
                             btnStartGame.setText("对方已准备");
                             if (isReady) {
-                                new Handler().postDelayed(this::enterGame, 500);
+                                startGame();
                             }
                         });
                         break;
 
-                    case "HEARTBEAT":
-                        // 收到心跳包，不做任何处理，只是保持连接活跃
+                    case "SEED":
+                        gameSeed = Long.parseLong(data);
+                        runOnUiThread(this::updateGameInfo);
                         break;
                 }
             }
@@ -243,28 +272,41 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         }
     }
 
-    private void enterGame() {
-        if (!isConnected) {
-            Toast.makeText(this, "连接已断开，无法开始游戏", Toast.LENGTH_SHORT).show();
-            return;
-        }
+    private void startGame() {
+        runOnUiThread(() -> {
+            Toast.makeText(this, "游戏开始! 种子: " + gameSeed, Toast.LENGTH_SHORT).show();
+            // 这里可以添加游戏初始化逻辑
+        });
+    }
 
-        Intent intent = new Intent(this, MultiplayerSudokuActivity.class);
-        intent.putExtra("isHost", isHost);
-        startActivity(intent);
-        finish();
+    private void updateGameInfo() {
+        runOnUiThread(() -> {
+            tvGameSeed.setText("随机种子: " + (gameSeed == 0 ? "未生成" : gameSeed));
+            tvMyProgress.setText("我的进度: " + myProgress + "/81");
+            tvOpponentProgress.setText("对方进度: " + opponentProgress + "/81");
+            tvMyStars.setText("我的星星: ☆" + myStars);
+            tvOpponentStars.setText("对方星星: ☆" + opponentStars);
+        });
     }
 
     private void enableChat(boolean enable) {
-        etMessage.setEnabled(enable);
-        btnSendMessage.setEnabled(enable);
+        runOnUiThread(() -> {
+            etMessage.setEnabled(enable);
+            btnSendMessage.setEnabled(enable);
+        });
     }
 
     private void resetConnection() {
         try {
-            if (socket != null) socket.close();
-            if (out != null) out.close();
-            if (in != null) in.close();
+            if (socket != null && !socket.isClosed()) {
+                socket.close();
+            }
+            if (out != null) {
+                out.close();
+            }
+            if (in != null) {
+                in.close();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
