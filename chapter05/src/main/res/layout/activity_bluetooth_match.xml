@@ -185,15 +185,21 @@
 
         <!-- 数独游戏区域  -->
         <!-- 数独网格 -->
-        <GridLayout
-            android:id="@+id/sudoku_grid"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="350dp"
             android:layout_weight="1"
-            android:columnCount="9"
-            android:rowCount="9"
-            android:background="#000000"/>
+            android:paddingHorizontal="16dp">
 
+            <GridLayout
+                android:id="@+id/sudoku_grid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:rowCount="9"
+                android:columnCount="9"
+                android:background="#000000"
+                android:padding="2dp"/>
+        </FrameLayout>
 
         <!-- 数字按钮 -->
         <LinearLayout
