@@ -211,6 +211,7 @@ public class BluetoothMatchActivity extends AppCompatActivity {
             }).start();
         });
 
+        // 在准备游戏时
         btnStartGame.setOnClickListener(v -> {
             if (!isConnected) {
                 Toast.makeText(this, "请先建立连接", Toast.LENGTH_SHORT).show();
@@ -221,25 +222,7 @@ public class BluetoothMatchActivity extends AppCompatActivity {
             btnStartGame.setEnabled(false);
             btnStartGame.setText("等待对方准备...");
 
-            new Thread(() -> {
-                try {
-                    out.println("READY|1");
-                    out.flush();
-
-                    // 如果是房主，生成随机种子
-                    if (isHost) {
-                        gameSeed = System.currentTimeMillis();
-                        runOnUiThread(this::updateGameInfo);
-                        out.println("SEED|" + gameSeed);
-                        out.flush();
-                    }
-                } catch (Exception e) {
-                    runOnUiThread(() -> {
-                        Toast.makeText(this, "发送准备消息失败", Toast.LENGTH_SHORT).show();
-                        resetConnection();
-                    });
-                }
-            }).start();
+            sendMessage("READY|1");
         });
     }
 
@@ -306,13 +289,7 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         try {
             while (isConnected && socket != null && !socket.isClosed()) {
                 String received = in.readLine();
-                if (received == null) {
-                    runOnUiThread(() -> {
-                        Toast.makeText(this, "对方已断开连接", Toast.LENGTH_SHORT).show();
-                        resetConnection();
-                    });
-                    break;
-                }
+                if (received == null) break;
 
                 String[] parts = received.split("\\|", 2);
                 if (parts.length < 2) continue;
@@ -337,7 +314,22 @@ public class BluetoothMatchActivity extends AppCompatActivity {
 
                     case "SEED":
                         gameSeed = Long.parseLong(data);
+                        // 使用相同的种子生成数独谜题
+                        predefinedValues = SudokuGenerator.generatePredefinedValuesWithSeed(2, gameSeed);
                         runOnUiThread(this::updateGameInfo);
+                        break;
+
+                    case "ERROR":
+                        opponentErrorCount = Integer.parseInt(data);
+                        runOnUiThread(this::updateErrorDisplay);
+                        break;
+
+                    case "MOVE":
+                        String[] moveParts = data.split(",");
+                        int row = Integer.parseInt(moveParts[0]);
+                        int col = Integer.parseInt(moveParts[1]);
+                        int num = Integer.parseInt(moveParts[2]);
+                        runOnUiThread(() -> onOpponentMove(row, col, num));
                         break;
                 }
             }
@@ -349,10 +341,20 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         }
     }
 
+    // 在开始游戏时
     private void startGame() {
         runOnUiThread(() -> {
+            if (isHost) {
+                gameSeed = System.currentTimeMillis();
+                predefinedValues = SudokuGenerator.generatePredefinedValuesWithSeed(2, gameSeed);
+                sendMessage("SEED|" + gameSeed);
+            }
+
+            initializeSudokuData();
+            createSudokuGrid();
+
             Toast.makeText(this, "游戏开始! 种子: " + gameSeed, Toast.LENGTH_SHORT).show();
-            // 这里可以添加游戏初始化逻辑
+            updateGameInfo();
         });
     }
 
@@ -560,28 +562,15 @@ public class BluetoothMatchActivity extends AppCompatActivity {
 
         TextView cell = cellViews.get(selectedRow + "_" + selectedCol);
         if (cell != null && !"fixed".equals(cell.getTag())) {
-            // 检查输入是否有效
             if (isValidMove(selectedRow, selectedCol, number)) {
-                // 有效输入
-                cell.setText(String.valueOf(number));
-                sudokuData[selectedRow][selectedCol] = number;
-                cell.setTextColor(Color.BLUE);
-                filledCells++;
-
-                // 通知对手自己的操作
-                // sendMoveMessage(selectedRow, selectedCol, number);
-
-                // 检查是否完成游戏
-                if (filledCells == TOTAL_CELLS) {
-                    checkGameCompletion();
-                }
+                // 有效输入...
+                sendMessage("MOVE|" + selectedRow + "," + selectedCol + "," + number);
             } else {
                 // 无效输入
                 errorCount++;
                 updateErrorDisplay();
-
-                // 通知对手自己的错误
-                // sendErrorUpdate();
+                // 发送错误计数给对手
+                sendMessage("ERROR|" + errorCount);
 
                 if (errorCount >= MAX_ERRORS) {
                     gameOver();
@@ -624,8 +613,14 @@ public class BluetoothMatchActivity extends AppCompatActivity {
     }
 
     private void updateErrorDisplay() {
-        errorText.setText("你: " + errorCount + "/" + MAX_ERRORS);
-        opponentErrorText.setText("对手: " + opponentErrorCount + "/" + MAX_ERRORS);
+        runOnUiThread(() -> {
+            errorText.setText("你: " + errorCount + "/" + MAX_ERRORS);
+            opponentErrorText.setText("对手: " + opponentErrorCount + "/" + MAX_ERRORS);
+
+            // 更新星星显示
+            tvMyStars.setText("我的星星: ☆" + (MAX_ERRORS - errorCount));
+            tvOpponentStars.setText("对方星星: ☆" + (MAX_ERRORS - opponentErrorCount));
+        });
     }
 
     private void updateStatusText(String status) {
@@ -830,13 +825,13 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         Toast.makeText(this, "已隐藏解决方案，恢复游戏", Toast.LENGTH_SHORT).show();
     }
 
-    // 处理对手的操作
+    // 处理对手移动
     public void onOpponentMove(int row, int col, int number) {
         runOnUiThread(() -> {
             TextView cell = cellViews.get(row + "_" + col);
             if (cell != null && !"fixed".equals(cell.getTag())) {
                 cell.setText(String.valueOf(number));
-                cell.setTextColor(Color.GREEN); // 用绿色显示对手的操作
+                cell.setTextColor(Color.GREEN);
                 sudokuData[row][col] = number;
                 filledCells++;
 
@@ -858,6 +853,22 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                 gameWin();
             }
         });
+    }
+
+    private void sendMessage(String message) {
+        if (out != null && !out.checkError()) {
+            new Thread(() -> {
+                try {
+                    out.println(message);
+                    out.flush();
+                } catch (Exception e) {
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "发送失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        resetConnection();
+                    });
+                }
+            }).start();
+        }
     }
 
 }
