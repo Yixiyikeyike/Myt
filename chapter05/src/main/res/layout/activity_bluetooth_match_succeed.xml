@@ -40,6 +40,15 @@
             android:text="获得星星: ☆☆☆"
             android:textSize="24sp"
             android:textColor="@color/white"/>
+        <TextView
+            android:id="@+id/tv_comparison"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="对比信息"
+            android:textSize="18sp"
+            android:textColor="@color/white"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"/>
     </LinearLayout>
 
     <Button

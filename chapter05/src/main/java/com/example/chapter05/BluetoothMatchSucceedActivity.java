@@ -54,6 +54,10 @@ public class BluetoothMatchSucceedActivity extends AppCompatActivity {
                 finish();
             }
         });
+        // 在onCreate方法中添加：
+        int opponentFilledCells = intent.getIntExtra("opponentFilledCells", 0);
+        TextView tvComparison = findViewById(R.id.tv_comparison);
+        tvComparison.setText(String.format("你填了 %d 格\n对手填了 %d 格", filledCells, opponentFilledCells));
     }
 
 //    @Override

@@ -13,6 +13,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Myt">
         <activity
+            android:name=".BluetoothMatchDrawActivity"
+            android:exported="false" />
+        <activity
             android:name=".BluetoothMatchSucceedActivity"
             android:exported="false" />
         <activity

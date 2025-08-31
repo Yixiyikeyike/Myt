@@ -383,6 +383,12 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                             gameOver(false); // 传入false表示不是自己主动失败
                         });
                         break;
+                    case "DRAW":
+                        runOnUiThread(() -> {
+                            // 对手发送了平局消息
+                            gameDraw();
+                        });
+                        break;
                 }
             }
         } catch (IOException e) {
@@ -707,8 +713,30 @@ public class BluetoothMatchActivity extends AppCompatActivity {
 
     private void checkGameCompletion() {
         if (isSudokuComplete()) {
-            gameWin();
+            // 游戏完成时，比较双方填的格子数
+            if (myFilledCells > opponentFilledCells) {
+                // 我方填的格子多，我方胜利
+                gameWin();
+            } else if (myFilledCells < opponentFilledCells) {
+                // 对方填的格子多，我方失败
+                gameOver(false);
+            } else {
+                // 填的格子数相同，平局
+                gameDraw();
+            }
         }
+    }
+
+    private void gameDraw() {
+        // 发送平局消息给对手
+        sendMessage("DRAW|1");
+
+        // 启动平局界面
+        Intent intent = new Intent(this, BluetoothMatchDrawActivity.class);
+        intent.putExtra("isHost", isHost);
+        intent.putExtra("filledCells", myFilledCells);
+        startActivity(intent);
+        finish();
     }
     private boolean isSudokuComplete() {
         // 检查所有行
@@ -769,6 +797,12 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         finish();
     }
     private void gameWin() {
+        // 确保我方确实填的格子比对方多
+        if (myFilledCells <= opponentFilledCells) {
+            // 如果不符合条件，不执行胜利逻辑
+            return;
+        }
+
         long elapsedTime = SystemClock.elapsedRealtime() - startTime;
         long minutes = (elapsedTime / 1000) / 60;
         long seconds = (elapsedTime / 1000) % 60;
@@ -786,6 +820,7 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         intent.putExtra("time", formattedTime);
         intent.putExtra("filledCells", myFilledCells);
         intent.putExtra("stars", starsEarned);
+        intent.putExtra("opponentFilledCells", opponentFilledCells); // 添加对手填的格子数
         startActivity(intent);
         finish();
     }
