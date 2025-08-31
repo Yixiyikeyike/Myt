@@ -90,6 +90,9 @@ public class BluetoothMatchActivity extends AppCompatActivity {
 
     // 蓝牙对战相关变量
     private long sharedSeed; // 双方共享的随机数种子
+    // 在类变量部分修改：
+    private int myFilledCells = 0; // 我自己填的格子数
+    private int opponentFilledCells = 0; // 对方填的格子数
 
 
 //    @Override
@@ -402,11 +405,12 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         });
     }
 
+    // 修改 updateGameInfo 方法：
     private void updateGameInfo() {
         runOnUiThread(() -> {
             tvGameSeed.setText("随机种子: " + (gameSeed == 0 ? "未生成" : gameSeed));
-            tvMyProgress.setText("我的进度: " + filledCells + "/81");
-            tvOpponentProgress.setText("对方进度: " + opponentProgress + "/81");
+            tvMyProgress.setText("我的进度: " + myFilledCells); // 只显示自己填的格子数
+            tvOpponentProgress.setText("对方进度: " + opponentFilledCells); // 只显示对方填的格子数
             tvMyStars.setText("我的星星: ☆" + (MAX_ERRORS - errorCount));
             tvOpponentStars.setText("对方星星: ☆" + (MAX_ERRORS - opponentErrorCount));
         });
@@ -454,10 +458,13 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         resetConnection();
     }
 
+    // 修改 initializeSudokuData 方法：
     private void initializeSudokuData() {
         sudokuData = new int[9][9];
         fixedCells = 0; // 重置固定单元格计数
-        opponentProgress = 0; // 初始化对手进度
+        myFilledCells = 0; // 重置自己填的格子数
+        opponentFilledCells = 0; // 重置对方填的格子数
+        filledCells = 0; // 重置总填充格子数
 
         // 初始化所有格子为0（空白）
         for (int i = 0; i < 9; i++) {
@@ -474,6 +481,7 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                 int value = predefined[2];
                 sudokuData[row][col] = value;
                 fixedCells++;
+                filledCells++; // 初始谜题的格子也算在总填充数中
             }
         }
 
@@ -481,8 +489,6 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         if (predefinedValues != null) {
             fullSolution = SudokuGenerator.generateSolutionForPuzzle(predefinedValues);
         }
-
-        filledCells = fixedCells;
     }
 
     private void createSudokuGrid() {
@@ -604,6 +610,7 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         }
     }
 
+    // 修改 onNumberSelected 方法中的相关部分：
     private void onNumberSelected(int number) {
         if (selectedRow == -1 || selectedCol == -1) {
             Toast.makeText(this, "请先选择一个格子", Toast.LENGTH_SHORT).show();
@@ -617,10 +624,10 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                 cell.setText(String.valueOf(number));
                 cell.setTextColor(Color.BLUE);
                 sudokuData[selectedRow][selectedCol] = number;
-                filledCells++;
+                myFilledCells++; // 只增加自己填的格子数
+                filledCells++; // 总填充格子数（用于游戏完成检查）
 
                 // 更新进度显示
-                myProgress = filledCells;
                 updateGameInfo();
 
                 // 检查游戏是否完成
@@ -888,7 +895,7 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         Toast.makeText(this, "已隐藏解决方案，恢复游戏", Toast.LENGTH_SHORT).show();
     }
 
-    // 处理对手移动
+    // 修改 onOpponentMove 方法：
     public void onOpponentMove(int row, int col, int number) {
         runOnUiThread(() -> {
             TextView cell = cellViews.get(row + "_" + col);
@@ -896,7 +903,8 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                 cell.setText(String.valueOf(number));
                 cell.setTextColor(Color.GREEN);
                 sudokuData[row][col] = number;
-                opponentProgress++; // 更新对手进度
+                opponentFilledCells++; // 只增加对方填的格子数
+                filledCells++; // 总填充格子数（用于游戏完成检查）
 
                 updateGameInfo();
             }
