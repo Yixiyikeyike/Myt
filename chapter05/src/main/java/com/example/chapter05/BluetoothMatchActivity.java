@@ -148,8 +148,9 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         setupViews();
         setupListeners();
 
-        // 不再在这里生成谜题
-        // 谜题将在双方都准备好后由主机生成
+        // 添加以下调用
+        setupNumberButtons();
+        setupFunctionButtons();
     }
 
     private void initViews() {
@@ -174,6 +175,23 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         opponentErrorText = findViewById(R.id.opponent_error_text);
         statusText = findViewById(R.id.status_text);
         sudokuGrid = findViewById(R.id.sudoku_grid);
+
+        // 添加数字按钮初始化
+        numberButtons = new Button[9];
+        numberButtons[0] = findViewById(R.id.btn_1);
+        numberButtons[1] = findViewById(R.id.btn_2);
+        numberButtons[2] = findViewById(R.id.btn_3);
+        numberButtons[3] = findViewById(R.id.btn_4);
+        numberButtons[4] = findViewById(R.id.btn_5);
+        numberButtons[5] = findViewById(R.id.btn_6);
+        numberButtons[6] = findViewById(R.id.btn_7);
+        numberButtons[7] = findViewById(R.id.btn_8);
+        numberButtons[8] = findViewById(R.id.btn_9);
+
+        // 添加功能按钮初始化
+        findViewById(R.id.btn_hint);
+        findViewById(R.id.btn_hint_close);
+        findViewById(R.id.btn_return);
     }
 
     private void setupViews() {
