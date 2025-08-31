@@ -2,17 +2,19 @@ package generator;
 import java.util.Random;
 
 public class SudokuGenerator {
-
-    // 生成一个完整的数独解决方案
-    public static int[][] generateSolution() {
+    // 使用静态Random对象，确保所有随机操作使用同一个种子
+    private static Random seededRandom;
+    // 生成一个完整的数独解决方案（使用种子）
+    public static int[][] generateSolution(long seed) {
+        seededRandom = new Random(seed);
         int[][] board = new int[9][9];
         solveSudoku(board, 0, 0);
         return board;
     }
 
     // 从完整解决方案中生成谜题（挖空一些格子）
-    public static int[][] generatePuzzle(int difficulty) {
-        int[][] solution = generateSolution();
+    public static int[][] generatePuzzle(int difficulty, long seed) {
+        int[][] solution = generateSolution(seed);
         int[][] puzzle = new int[9][9];
 
         // 复制完整解决方案
@@ -42,18 +44,18 @@ public class SudokuGenerator {
 
     // 生成预定义值数组格式
     public static int[][] generatePredefinedValues(int difficulty) {
-        int[][] puzzle = generatePuzzle(difficulty);
+        long seed = System.currentTimeMillis();
+        int[][] puzzle = generatePuzzle(difficulty, seed);
         return convertToPredefinedFormat(puzzle);
     }
 
     // 使用随机种子生成谜题
     public static int[][] generatePredefinedValuesWithSeed(int difficulty, long seed) {
-        Random rand = new Random(seed);
-        int[][] puzzle = generatePuzzle(difficulty);
+        seededRandom = new Random(seed);
+        int[][] puzzle = generatePuzzle(difficulty, seed);
         return convertToPredefinedFormat(puzzle);
     }
 
-    // 递归解决数独
     // 递归解决数独（确保不修改预填数字）
     private static boolean solveSudoku(int[][] board, int row, int col) {
         if (row == 9) {
@@ -69,7 +71,7 @@ public class SudokuGenerator {
             return solveSudoku(board, row, col + 1);
         }
 
-        // 随机尝试数字
+        // 随机尝试数字（使用种子随机）
         int[] numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9};
         shuffleArray(numbers);
 
@@ -116,14 +118,13 @@ public class SudokuGenerator {
         return true;
     }
 
-    // 随机挖空格子
+    // 随机挖空格子（使用种子随机）
     private static void removeCells(int[][] board, int cellsToRemove) {
-        Random random = new Random();
         int removed = 0;
 
         while (removed < cellsToRemove) {
-            int row = random.nextInt(9);
-            int col = random.nextInt(9);
+            int row = seededRandom.nextInt(9);
+            int col = seededRandom.nextInt(9);
 
             if (board[row][col] != 0) {
                 int temp = board[row][col];
@@ -174,11 +175,10 @@ public class SudokuGenerator {
         return predefinedValues;
     }
 
-    // 随机打乱数组
+    // 随机打乱数组（使用种子随机）
     private static void shuffleArray(int[] array) {
-        Random random = new Random();
         for (int i = array.length - 1; i > 0; i--) {
-            int index = random.nextInt(i + 1);
+            int index = seededRandom.nextInt(i + 1);
             int temp = array[index];
             array[index] = array[i];
             array[i] = temp;
@@ -200,6 +200,7 @@ public class SudokuGenerator {
             System.out.println();
         }
     }
+    // 生成与预填数字匹配的解决方案
     public static int[][] generateSolutionForPuzzle(int[][] predefinedValues) {
         int[][] board = new int[9][9];
 
