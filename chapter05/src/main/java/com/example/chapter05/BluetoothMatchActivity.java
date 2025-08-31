@@ -379,8 +379,8 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                     // 在 receiveMessages() 方法的 switch 语句中添加一个新的 case
                     case "WIN":
                         runOnUiThread(() -> {
-                            // 对手已经获胜，我方失败
-                            gameOver(false); // 传入false表示不是自己主动失败
+                            // 对手已经获胜，我方胜利（因为对手失误超过三次）
+                            gameWin(); // 修改为调用gameWin()而不是gameOver(false)
                         });
                         break;
                     case "DRAW":
@@ -665,7 +665,8 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                 sendMessage("ERROR|" + errorCount);
 
                 if (errorCount >= MAX_ERRORS) {
-                    gameOver(true);
+                    gameOver(true); // 明确表示是主动失败
+                    return; // 添加return避免继续执行
                 } else {
                     Toast.makeText(this, "输入错误！剩余机会: " + (MAX_ERRORS - errorCount),
                             Toast.LENGTH_SHORT).show();
@@ -794,7 +795,8 @@ public class BluetoothMatchActivity extends AppCompatActivity {
     private void gameOver(boolean isVoluntary) {
         if (isGameEnded) return;
         isGameEnded = true;
-        // 如果是主动失败（如错误次数达到上限），通知对手
+
+        // 只有在主动失败（错误次数达到上限）时才通知对手
         if (isVoluntary) {
             sendMessage("WIN|1");
         }
@@ -814,11 +816,8 @@ public class BluetoothMatchActivity extends AppCompatActivity {
     private void gameWin() {
         if (isGameEnded) return;
         isGameEnded = true;
-        // 确保我方确实填的格子比对方多
-        if (myFilledCells <= opponentFilledCells) {
-            // 如果不符合条件，不执行胜利逻辑
-            return;
-        }
+
+        // 移除格子数比较检查，因为当对手失误超过三次时，无论格子数如何都应该胜利
 
         long elapsedTime = SystemClock.elapsedRealtime() - startTime;
         long minutes = (elapsedTime / 1000) / 60;
@@ -828,16 +827,13 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         // 计算获得的星星数 (3 - 错误数)
         int starsEarned = MAX_ERRORS - errorCount;
 
-        // 发送胜利消息给对手
-        sendMessage("WIN|1");
-
         // 启动胜利界面
         Intent intent = new Intent(this, BluetoothMatchSucceedActivity.class);
         intent.putExtra("isHost", isHost);
         intent.putExtra("time", formattedTime);
         intent.putExtra("filledCells", myFilledCells);
         intent.putExtra("stars", starsEarned);
-        intent.putExtra("opponentFilledCells", opponentFilledCells); // 添加对手填的格子数
+        intent.putExtra("opponentFilledCells", opponentFilledCells);
         startActivity(intent);
         finish();
     }
