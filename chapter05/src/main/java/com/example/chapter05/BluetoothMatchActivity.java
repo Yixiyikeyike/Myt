@@ -763,13 +763,15 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         long seconds = (elapsedTime / 1000) % 60;
         String formattedTime = String.format("%02d:%02d", minutes, seconds);
 
-        // 通知对手游戏胜利
-        // sendGameWinMessage();
+        // 计算获得的星星数 (3 - 错误数)
+        int starsEarned = MAX_ERRORS - errorCount;
 
         // 启动胜利界面
         Intent intent = new Intent(this, BluetoothMatchSucceedActivity.class);
         intent.putExtra("isHost", isHost);
         intent.putExtra("time", formattedTime);
+        intent.putExtra("filledCells", myFilledCells); // 传递自己填的格子数
+        intent.putExtra("stars", starsEarned); // 传递获得的星星数
         startActivity(intent);
         finish();
     }

@@ -8,17 +8,57 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
 public class BluetoothMatchSucceedActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_bluetooth_match_succeed);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+
+        // 获取传递过来的数据
+        Intent intent = getIntent();
+        int filledCells = intent.getIntExtra("filledCells", 0);
+        int stars = intent.getIntExtra("stars", 3);
+        boolean isHost = intent.getBooleanExtra("isHost", false);
+        String time = intent.getStringExtra("time");
+
+        TextView tvProgress = findViewById(R.id.tv_progress);
+        TextView tvStars = findViewById(R.id.tv_stars);
+
+        // 设置显示内容
+        tvProgress.setText(String.format("完成格子: %d", filledCells));
+
+        // 根据星星数设置星星显示
+        String starsText = "获得星星: ";
+        for (int i = 0; i < stars; i++) {
+            starsText += "☆";
+        }
+        tvStars.setText(starsText);
+
+        Button btnReturn = findViewById(R.id.btn_return);
+        btnReturn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 返回UserMsgActivity并清除活动栈
+                Intent intent = new Intent(BluetoothMatchSucceedActivity.this, UserMsgActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+            }
         });
     }
+
+//    @Override
+//    public void onBackPressed() {
+//        // 禁用返回键，强制用户点击返回按钮
+//        // super.onBackPressed();
+//    }
 }
