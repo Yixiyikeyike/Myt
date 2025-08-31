@@ -114,4 +114,13 @@ public class SharedPreferencesUtil {
         }
         return false;
     }
+    public static void saveDifficulty(Context context, int difficulty) {
+        SharedPreferences prefs = context.getSharedPreferences("SudokuPrefs", Context.MODE_PRIVATE);
+        prefs.edit().putInt("difficulty", difficulty).apply();
+    }
+
+    public static int getDifficulty(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences("SudokuPrefs", Context.MODE_PRIVATE);
+        return prefs.getInt("difficulty", 2); // 默认中等难度
+    }
 }

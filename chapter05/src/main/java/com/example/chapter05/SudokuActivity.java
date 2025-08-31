@@ -52,14 +52,21 @@ public class SudokuActivity extends AppCompatActivity {
     private final int MAX_HINTS = 3;
     private Button btnSingleHint;
     private int[][][] noteData = new int[9][9][9]; // 存储每个格子的笔记数字
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sudoku);
 
+        // 读取保存的难度，如果没有则使用传入的难度
+        int savedDifficulty = SharedPreferencesUtil.getDifficulty(this);
+        int intentDifficulty = getIntent().getIntExtra("difficulty", savedDifficulty);
+
+
         // 使用随机种子生成谜题
         long seed = System.currentTimeMillis();
-        predefinedValues = SudokuGenerator.generatePredefinedValuesWithSeed(2, seed);
+        int difficulty = getIntent().getIntExtra("difficulty", 2); // 默认为中等难度
+        predefinedValues = SudokuGenerator.generatePredefinedValuesWithSeed(difficulty, seed);
 
         // 设置顶部信息
         timerText = findViewById(R.id.timer_text);
@@ -68,6 +75,8 @@ public class SudokuActivity extends AppCompatActivity {
 
         // 设置数独网格
         sudokuGrid = findViewById(R.id.sudoku_grid);
+
+
 
         // 初始化数独数据
         initializeSudokuData();
@@ -112,10 +121,36 @@ public class SudokuActivity extends AppCompatActivity {
 
         filledCells = fixedCells;
     }
+
+    private void showDifficultyDialog() {
+        String[] difficultyOptions = {"简单", "中等", "困难"};
+
+        new AlertDialog.Builder(this)
+                .setTitle("选择难度")
+                .setItems(difficultyOptions, (dialog, which) -> {
+                    // which: 0=简单, 1=中等, 2=困难
+                    setDifficulty(which + 1); // 转换为1-3的难度级别
+                    Toast.makeText(this, "已选择" + difficultyOptions[which] + "难度",
+                            Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("取消", null)
+                .show();
+    }
     // 添加难度选择功能
     public void setDifficulty(int difficulty) {
+        // 验证难度值在有效范围内
+        if (difficulty < 1 || difficulty > 3) {
+            difficulty = 2; // 默认中等难度
+        }
+
+        // 保存当前选择的难度
+        SharedPreferencesUtil.saveDifficulty(this, difficulty);
+
+        // 使用随机种子生成新谜题
         long seed = System.currentTimeMillis();
         predefinedValues = SudokuGenerator.generatePredefinedValuesWithSeed(difficulty, seed);
+
+        // 重置游戏
         resetGame();
     }
 
@@ -239,6 +274,9 @@ public class SudokuActivity extends AppCompatActivity {
                 hideSolutionHint();
             }
         });
+        // 在setupFunctionButtons()方法中添加
+        Button btnDifficulty = findViewById(R.id.btn_difficulty);
+        btnDifficulty.setOnClickListener(v -> showDifficultyDialog());
 // 返回主界面按钮
         Button returnButton = findViewById(R.id.btn_return);
         returnButton.setOnClickListener(v -> {

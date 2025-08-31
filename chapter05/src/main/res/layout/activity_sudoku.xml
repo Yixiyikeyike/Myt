@@ -159,6 +159,12 @@
                 android:layout_weight="1"
                 android:text="提示 (3)"
                 android:textSize="16sp" />
+            <Button
+                android:id="@+id/btn_difficulty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="难度选择"
+                android:layout_margin="8dp"/>
         </LinearLayout>
 
         <!-- 功能按钮 -->
