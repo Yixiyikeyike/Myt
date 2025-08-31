@@ -52,11 +52,29 @@ public class SudokuActivity extends AppCompatActivity {
     private final int MAX_HINTS = 3;
     private Button btnSingleHint;
     private int[][][] noteData = new int[9][9][9]; // 存储每个格子的笔记数字
+    // 在类变量中添加
+    private long elapsedTime = 0;
+    private boolean isGameLoaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sudoku);
+
+        if (SharedPreferencesUtil.hasSavedGame(this)) {
+            new AlertDialog.Builder(this)
+                    .setTitle("加载存档")
+                    .setMessage("检测到有保存的游戏，是否加载？")
+                    .setPositiveButton("加载", (dialog, which) -> {
+                        loadGame();
+                        isGameLoaded = true;
+                    })
+                    .setNegativeButton("新建游戏", (dialog, which) -> {
+                        SharedPreferencesUtil.clearSavedGame(this);
+                        isGameLoaded = false;
+                    })
+                    .show();
+        }
 
         // 读取保存的难度，如果没有则使用传入的难度
         int savedDifficulty = SharedPreferencesUtil.getDifficulty(this);
@@ -255,6 +273,9 @@ public class SudokuActivity extends AppCompatActivity {
     }
 
     private void setupFunctionButtons() {
+        // 在setupFunctionButtons方法中添加保存按钮
+        Button btnSaveGame = findViewById(R.id.btn_save_game);
+        btnSaveGame.setOnClickListener(v -> saveGame());
         // 提示按钮（显示完整解决方案）
         Button hintButton = findViewById(R.id.btn_hint);
         hintButton.setOnClickListener(new View.OnClickListener() {
@@ -282,19 +303,22 @@ public class SudokuActivity extends AppCompatActivity {
         returnButton.setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("确认退出")
-                    .setMessage("确定要返回主界面吗？当前游戏进度将丢失")
-                    .setPositiveButton("确定", (dialog, which) -> {
-                        // 记录中途退出 (得分为0)
-                        SharedPreferencesUtil.saveGameRecord(this,
-                                new SharedPreferencesUtil.GameRecord(0, "00:00", 0));
-
-                        // 返回UserMsgActivity
+                    .setMessage("确定要返回主界面吗？")
+                    .setPositiveButton("保存并退出", (dialog, which) -> {
+                        saveGame(); // 保存当前游戏
                         Intent intent = new Intent(this, UserMsgActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
                         finish();
                     })
-                    .setNegativeButton("取消", null)
+                    .setNegativeButton("直接退出", (dialog, which) -> {
+                        SharedPreferencesUtil.clearSavedGame(this); // 清除存档
+                        Intent intent = new Intent(this, UserMsgActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
+                        finish();
+                    })
+                    .setNeutralButton("取消", null)
                     .show();
         });
 
@@ -636,6 +660,8 @@ public class SudokuActivity extends AppCompatActivity {
         // 启动失败界面
         Intent intent = new Intent(this, SingleFailedActivity.class);
         startActivity(intent);
+        // 清除存档
+        SharedPreferencesUtil.clearSavedGame(this);
         finish();
     }
 
@@ -657,11 +683,18 @@ public class SudokuActivity extends AppCompatActivity {
         intent.putExtra("stars", starsEarned);
         intent.putExtra("time", formattedTime);
         startActivity(intent);
+        // 清除存档
+        SharedPreferencesUtil.clearSavedGame(this);
         finish();
     }
 
+    // 修改startTimer方法，考虑已用时间
     private void startTimer() {
-        startTime = SystemClock.elapsedRealtime();
+        if (!isGameLoaded) {
+            startTime = SystemClock.elapsedRealtime();
+            elapsedTime = 0;
+        }
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -669,9 +702,10 @@ public class SudokuActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            long elapsedMillis = SystemClock.elapsedRealtime() - startTime;
-                            long minutes = (elapsedMillis / 1000) / 60;
-                            long seconds = (elapsedMillis / 1000) % 60;
+                            long currentElapsed = SystemClock.elapsedRealtime() - startTime;
+                            long totalElapsed = elapsedTime + currentElapsed;
+                            long minutes = (totalElapsed / 1000) / 60;
+                            long seconds = (totalElapsed / 1000) % 60;
                             timerText.setText(String.format("%02d:%02d", minutes, seconds));
                         }
                     });
@@ -716,6 +750,63 @@ public class SudokuActivity extends AppCompatActivity {
     private void updateHintButtonDisplay() {
         btnSingleHint.setText("提示 (" + (MAX_HINTS - hintCount) + ")");
     }
+    // 添加保存游戏方法
+    private void saveGame() {
+        // 计算已用时间
+        long currentElapsed = SystemClock.elapsedRealtime() - startTime;
 
+        // 将3D笔记数据转换为2D数组（简化处理）
+        int[][] simplifiedNotes = new int[9][9];
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                for (int k = 0; k < 9; k++) {
+                    if (noteData[i][j][k] != 0) {
+                        simplifiedNotes[i][j] |= (1 << k); // 使用位掩码简化存储
+                    }
+                }
+            }
+        }
+
+        SharedPreferencesUtil.saveGameState(this, sudokuData, simplifiedNotes,
+                errorCount, filledCells, currentElapsed + elapsedTime);
+
+        Toast.makeText(this, "游戏已保存", Toast.LENGTH_SHORT).show();
+    }
+
+    // 添加加载游戏方法
+    private void loadGame() {
+        SharedPreferencesUtil.SavedGameState savedState = SharedPreferencesUtil.loadGameState(this);
+
+        if (savedState != null) {
+            sudokuData = savedState.sudokuData;
+            errorCount = savedState.errorCount;
+            filledCells = savedState.filledCells;
+            elapsedTime = savedState.elapsedTime;
+
+            // 恢复笔记数据
+            int[][] simplifiedNotes = savedState.noteData;
+            noteData = new int[9][9][9];
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    if (simplifiedNotes[i][j] != 0) {
+                        for (int k = 0; k < 9; k++) {
+                            if ((simplifiedNotes[i][j] & (1 << k)) != 0) {
+                                noteData[i][j][k] = k + 1;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 更新UI
+            createSudokuGrid();
+            updateErrorDisplay();
+
+            // 恢复计时器
+            startTime = SystemClock.elapsedRealtime() - elapsedTime;
+
+            Toast.makeText(this, "游戏已加载", Toast.LENGTH_SHORT).show();
+        }
+    }
 
 }

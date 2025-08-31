@@ -181,7 +181,7 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:layout_margin="4dp"
-                android:text="提示"
+                android:text="作弊"
                 android:textSize="16sp"/>
 
             <Button
@@ -190,7 +190,7 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:layout_margin="4dp"
-                android:text="提示关闭"
+                android:text="作弊关闭"
                 android:textSize="16sp"/>
 
             <Button
@@ -202,6 +202,18 @@
                 android:text="返回主界面"
                 android:textSize="16sp"
                 android:backgroundTint="#FF5722"/>
+            <Button
+                android:id="@+id/btn_save_game"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="保存游戏"
+                android:layout_margin="8dp"/>
         </LinearLayout>
+<!--        <LinearLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="horizontal">-->
+<!--            -->
+<!--        </LinearLayout>-->
     </LinearLayout>
 </ScrollView>

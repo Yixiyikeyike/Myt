@@ -15,6 +15,7 @@ public class SharedPreferencesUtil {
     private static final String KEY_USERNAME = "username";
     private static final String KEY_GAME_RECORDS = "game_records";
     private static final Gson gson = new Gson();
+    private static final String KEY_SAVED_GAME = "saved_game";
 
     // 保存用户名
     public static void saveUsername(Context context, String username) {
@@ -122,5 +123,79 @@ public class SharedPreferencesUtil {
     public static int getDifficulty(Context context) {
         SharedPreferences prefs = context.getSharedPreferences("SudokuPrefs", Context.MODE_PRIVATE);
         return prefs.getInt("difficulty", 2); // 默认中等难度
+    }
+
+    // 保存游戏状态
+    public static void saveGameState(Context context, int[][] sudokuData, int[][] noteData,
+                                     int errorCount, int filledCells, long elapsedTime) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        // 将游戏数据转换为JSON字符串
+        Gson gson = new Gson();
+        editor.putString(KEY_SAVED_GAME + "_sudoku", gson.toJson(sudokuData));
+        editor.putString(KEY_SAVED_GAME + "_notes", gson.toJson(noteData));
+        editor.putInt(KEY_SAVED_GAME + "_errors", errorCount);
+        editor.putInt(KEY_SAVED_GAME + "_filled", filledCells);
+        editor.putLong(KEY_SAVED_GAME + "_time", elapsedTime);
+
+        editor.apply();
+    }
+
+    // 检查是否有保存的游戏
+    public static boolean hasSavedGame(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.contains(KEY_SAVED_GAME + "_sudoku");
+    }
+
+    // 加载游戏状态
+    public static SavedGameState loadGameState(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+
+        Gson gson = new Gson();
+        String sudokuJson = prefs.getString(KEY_SAVED_GAME + "_sudoku", "");
+        String notesJson = prefs.getString(KEY_SAVED_GAME + "_notes", "");
+
+        Type type = new TypeToken<int[][]>(){}.getType();
+        int[][] sudokuData = gson.fromJson(sudokuJson, type);
+        int[][] noteData = gson.fromJson(notesJson, type);
+
+        int errorCount = prefs.getInt(KEY_SAVED_GAME + "_errors", 0);
+        int filledCells = prefs.getInt(KEY_SAVED_GAME + "_filled", 0);
+        long elapsedTime = prefs.getLong(KEY_SAVED_GAME + "_time", 0);
+
+        return new SavedGameState(sudokuData, noteData, errorCount, filledCells, elapsedTime);
+    }
+
+    // 清除保存的游戏
+    public static void clearSavedGame(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        editor.remove(KEY_SAVED_GAME + "_sudoku");
+        editor.remove(KEY_SAVED_GAME + "_notes");
+        editor.remove(KEY_SAVED_GAME + "_errors");
+        editor.remove(KEY_SAVED_GAME + "_filled");
+        editor.remove(KEY_SAVED_GAME + "_time");
+
+        editor.apply();
+    }
+
+    // 保存的游戏状态数据类
+    public static class SavedGameState {
+        public int[][] sudokuData;
+        public int[][] noteData;
+        public int errorCount;
+        public int filledCells;
+        public long elapsedTime;
+
+        public SavedGameState(int[][] sudokuData, int[][] noteData, int errorCount,
+                              int filledCells, long elapsedTime) {
+            this.sudokuData = sudokuData;
+            this.noteData = noteData;
+            this.errorCount = errorCount;
+            this.filledCells = filledCells;
+            this.elapsedTime = elapsedTime;
+        }
     }
 }
