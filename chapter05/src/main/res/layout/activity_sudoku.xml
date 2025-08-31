@@ -152,6 +152,13 @@
                 android:textOff="笔记模式:关"
                 android:textSize="16sp"
                 android:background="@drawable/toggle_button_selector"/>
+            <Button
+                android:id="@+id/btn_single_hint"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="提示 (3)"
+                android:textSize="16sp" />
         </LinearLayout>
 
         <!-- 功能按钮 -->

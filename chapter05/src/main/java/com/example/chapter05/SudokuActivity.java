@@ -47,6 +47,10 @@ public class SudokuActivity extends AppCompatActivity {
     // 在类变量中添加
     private boolean isNoteMode = false;
     private ToggleButton btnNoteToggle;
+
+    private int hintCount = 0;
+    private final int MAX_HINTS = 3;
+    private Button btnSingleHint;
     private int[][][] noteData = new int[9][9][9]; // 存储每个格子的笔记数字
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,6 +127,8 @@ public class SudokuActivity extends AppCompatActivity {
         fixedCells = 0;
         selectedRow = -1;
         selectedCol = -1;
+        hintCount = 0;
+        updateHintButtonDisplay();
 
         // 重新初始化数据
         initializeSudokuData();
@@ -253,6 +259,39 @@ public class SudokuActivity extends AppCompatActivity {
                     .setNegativeButton("取消", null)
                     .show();
         });
+
+// 单个提示按钮
+        btnSingleHint = findViewById(R.id.btn_single_hint);
+        btnSingleHint.setOnClickListener(v -> {
+            if (hintCount >= MAX_HINTS) {
+                Toast.makeText(this, "提示次数已用完", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (selectedRow == -1 || selectedCol == -1) {
+                Toast.makeText(this, "请先选择一个格子", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // 检查是否是预填格子
+            TextView cell = cellViews.get(selectedRow + "_" + selectedCol);
+            if (cell != null && "fixed".equals(cell.getTag())) {
+                Toast.makeText(this, "不能提示预填格子", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // 检查格子是否已填
+            if (sudokuData[selectedRow][selectedCol] != 0) {
+                Toast.makeText(this, "格子已填写", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // 使用提示
+            useSingleHint();
+        });
+
+        // 更新提示按钮显示
+        updateHintButtonDisplay();
         // 笔记模式开关按钮
         btnNoteToggle = findViewById(R.id.btn_note_toggle);
         btnNoteToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -552,6 +591,10 @@ public class SudokuActivity extends AppCompatActivity {
             btn.setEnabled(false);
         }
 
+        // 保存游戏记录
+        SharedPreferencesUtil.saveGameRecord(this,
+                new SharedPreferencesUtil.GameRecord(0, "00:00", hintCount));
+
         // 启动失败界面
         Intent intent = new Intent(this, SingleFailedActivity.class);
         startActivity(intent);
@@ -566,6 +609,10 @@ public class SudokuActivity extends AppCompatActivity {
 
         // 计算获得的星星 (3 - 错误次数)
         int starsEarned = MAX_ERRORS - errorCount;
+
+        // 可以在保存游戏记录时加入提示使用情况
+        SharedPreferencesUtil.saveGameRecord(this,
+                new SharedPreferencesUtil.GameRecord(starsEarned, formattedTime, hintCount));
 
         // 启动结算界面
         Intent intent = new Intent(this, SingleSucceedActivity.class);
@@ -600,5 +647,37 @@ public class SudokuActivity extends AppCompatActivity {
             }
         }).start();
     }
+
+    // 使用单个提示
+    private void useSingleHint() {
+        if (fullSolution == null || selectedRow == -1 || selectedCol == -1) {
+            return;
+        }
+
+        int correctValue = fullSolution[selectedRow][selectedCol];
+        TextView cell = cellViews.get(selectedRow + "_" + selectedCol);
+
+        if (cell != null) {
+            cell.setText(String.valueOf(correctValue));
+            cell.setTextColor(Color.GREEN); // 用绿色表示提示
+            cell.setTextSize(20);
+            sudokuData[selectedRow][selectedCol] = correctValue;
+            filledCells++;
+
+            hintCount++;
+            updateHintButtonDisplay();
+
+            // 检查游戏是否完成
+            if (filledCells == TOTAL_CELLS) {
+                checkGameCompletion();
+            }
+        }
+    }
+
+    // 更新提示按钮显示
+    private void updateHintButtonDisplay() {
+        btnSingleHint.setText("提示 (" + (MAX_HINTS - hintCount) + ")");
+    }
+
 
 }
