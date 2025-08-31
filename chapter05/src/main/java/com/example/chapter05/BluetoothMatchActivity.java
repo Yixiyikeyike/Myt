@@ -375,6 +375,14 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                         int num = Integer.parseInt(moveParts[2]);
                         runOnUiThread(() -> onOpponentMove(row, col, num));
                         break;
+
+                    // 在 receiveMessages() 方法的 switch 语句中添加一个新的 case
+                    case "WIN":
+                        runOnUiThread(() -> {
+                            // 对手已经获胜，我方失败
+                            gameOver(false); // 传入false表示不是自己主动失败
+                        });
+                        break;
                 }
             }
         } catch (IOException e) {
@@ -643,7 +651,7 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                 sendMessage("ERROR|" + errorCount);
 
                 if (errorCount >= MAX_ERRORS) {
-                    gameOver();
+                    gameOver(true);
                 } else {
                     Toast.makeText(this, "输入错误！剩余机会: " + (MAX_ERRORS - errorCount),
                             Toast.LENGTH_SHORT).show();
@@ -742,18 +750,21 @@ public class BluetoothMatchActivity extends AppCompatActivity {
 
         return true;
     }
-    private void gameOver() {
+    private void gameOver(boolean isVoluntary) {
+        // 如果是主动失败（如错误次数达到上限），通知对手
+        if (isVoluntary) {
+            sendMessage("WIN|1");
+        }
+
         // 禁用所有数字按钮
         for (Button btn : numberButtons) {
             btn.setEnabled(false);
         }
 
-        // 通知对手游戏结束
-        // sendGameOverMessage();
-
         // 启动失败界面
         Intent intent = new Intent(this, BluetoothMatchFailedActivity.class);
         intent.putExtra("isHost", isHost);
+        intent.putExtra("isVoluntary", isVoluntary); // 传递是否是主动失败
         startActivity(intent);
         finish();
     }
@@ -766,12 +777,15 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         // 计算获得的星星数 (3 - 错误数)
         int starsEarned = MAX_ERRORS - errorCount;
 
+        // 发送胜利消息给对手
+        sendMessage("WIN|1");
+
         // 启动胜利界面
         Intent intent = new Intent(this, BluetoothMatchSucceedActivity.class);
         intent.putExtra("isHost", isHost);
         intent.putExtra("time", formattedTime);
-        intent.putExtra("filledCells", myFilledCells); // 传递自己填的格子数
-        intent.putExtra("stars", starsEarned); // 传递获得的星星数
+        intent.putExtra("filledCells", myFilledCells);
+        intent.putExtra("stars", starsEarned);
         startActivity(intent);
         finish();
     }
