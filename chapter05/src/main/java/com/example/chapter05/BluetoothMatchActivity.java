@@ -93,7 +93,7 @@ public class BluetoothMatchActivity extends AppCompatActivity {
     // 在类变量部分修改：
     private int myFilledCells = 0; // 我自己填的格子数
     private int opponentFilledCells = 0; // 对方填的格子数
-
+    private boolean isGameEnded = false; // 添加这个变量，用于标记游戏是否已结束
 
 //    @Override
 //    protected void onCreate(Bundle savedInstanceState) {
@@ -389,6 +389,14 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                             gameDraw();
                         });
                         break;
+                    case "COMPLETED":
+                        runOnUiThread(() -> {
+                            // 对手通知游戏已完成，强制检查游戏状态
+                            if (isSudokuComplete()) {
+                                checkGameCompletion();
+                            }
+                        });
+                        break;
                 }
             }
         } catch (IOException e) {
@@ -479,7 +487,7 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         myFilledCells = 0; // 重置自己填的格子数
         opponentFilledCells = 0; // 重置对方填的格子数
         filledCells = 0; // 重置总填充格子数
-
+        isGameEnded = false; // 重置游戏结束标志
         // 初始化所有格子为0（空白）
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
@@ -724,10 +732,15 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                 // 填的格子数相同，平局
                 gameDraw();
             }
+
+            // 发送游戏完成消息给对手
+            sendMessage("COMPLETED|1");
         }
     }
 
     private void gameDraw() {
+        if (isGameEnded) return;
+        isGameEnded = true;
         // 发送平局消息给对手
         sendMessage("DRAW|1");
 
@@ -779,6 +792,8 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         return true;
     }
     private void gameOver(boolean isVoluntary) {
+        if (isGameEnded) return;
+        isGameEnded = true;
         // 如果是主动失败（如错误次数达到上限），通知对手
         if (isVoluntary) {
             sendMessage("WIN|1");
@@ -797,6 +812,8 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         finish();
     }
     private void gameWin() {
+        if (isGameEnded) return;
+        isGameEnded = true;
         // 确保我方确实填的格子比对方多
         if (myFilledCells <= opponentFilledCells) {
             // 如果不符合条件，不执行胜利逻辑
@@ -958,6 +975,11 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                 filledCells++; // 总填充格子数（用于游戏完成检查）
 
                 updateGameInfo();
+
+                // 添加游戏完成检查
+                if (isSudokuComplete()) {
+                    checkGameCompletion();
+                }
             }
         });
     }
