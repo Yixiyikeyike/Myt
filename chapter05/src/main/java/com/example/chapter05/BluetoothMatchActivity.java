@@ -92,6 +92,48 @@ public class BluetoothMatchActivity extends AppCompatActivity {
     private long sharedSeed; // 双方共享的随机数种子
 
 
+//    @Override
+//    protected void onCreate(Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//        setContentView(R.layout.activity_bluetooth_match);
+//
+//        // 获取蓝牙对战参数
+//        Intent intent = getIntent();
+//        sharedSeed = intent.getLongExtra("seed", System.currentTimeMillis());
+//        isHost = intent.getBooleanExtra("isHost", false);
+//
+//        initViews();
+//        setupViews();
+//        setupListeners();
+//
+//        // 初始化UI组件
+//        initViews();
+//
+//        // 使用共享种子生成数独谜题
+//        predefinedValues = SudokuGenerator.generatePredefinedValuesWithSeed(2, sharedSeed);
+//
+//        // 初始化数独数据
+//        initializeSudokuData();
+//
+//        // 创建数独网格
+//        createSudokuGrid();
+//
+//        // 设置数字按钮
+//        setupNumberButtons();
+//
+//        // 设置功能按钮
+//        setupFunctionButtons();
+//
+//        // 开始计时
+//        startTimer();
+//
+//        // 更新错误计数显示
+//        updateErrorDisplay();
+//
+//        // 设置对战状态显示
+//        updateStatusText(isHost ? "等待对手连接..." : "已连接到主机");
+//    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,32 +148,8 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         setupViews();
         setupListeners();
 
-        // 初始化UI组件
-        initViews();
-
-        // 使用共享种子生成数独谜题
-        predefinedValues = SudokuGenerator.generatePredefinedValuesWithSeed(2, sharedSeed);
-
-        // 初始化数独数据
-        initializeSudokuData();
-
-        // 创建数独网格
-        createSudokuGrid();
-
-        // 设置数字按钮
-        setupNumberButtons();
-
-        // 设置功能按钮
-        setupFunctionButtons();
-
-        // 开始计时
-        startTimer();
-
-        // 更新错误计数显示
-        updateErrorDisplay();
-
-        // 设置对战状态显示
-        updateStatusText(isHost ? "等待对手连接..." : "已连接到主机");
+        // 不再在这里生成谜题
+        // 谜题将在双方都准备好后由主机生成
     }
 
     private void initViews() {
@@ -316,7 +334,12 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                         gameSeed = Long.parseLong(data);
                         // 使用相同的种子生成数独谜题
                         predefinedValues = SudokuGenerator.generatePredefinedValuesWithSeed(2, gameSeed);
-                        runOnUiThread(this::updateGameInfo);
+                        runOnUiThread(() -> {
+                            initializeSudokuData();  // 初始化数独数据
+                            createSudokuGrid();      // 创建数独网格
+                            updateGameInfo();        // 更新游戏信息
+                            Toast.makeText(this, "已接收游戏种子: " + gameSeed, Toast.LENGTH_SHORT).show();
+                        });
                         break;
 
                     case "ERROR":
@@ -350,8 +373,11 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                 sendMessage("SEED|" + gameSeed);
             }
 
-            initializeSudokuData();
-            createSudokuGrid();
+            // 只有在主机端立即初始化，客户端等待接收种子
+            if (isHost) {
+                initializeSudokuData();
+                createSudokuGrid();
+            }
 
             Toast.makeText(this, "游戏开始! 种子: " + gameSeed, Toast.LENGTH_SHORT).show();
             updateGameInfo();
@@ -412,6 +438,7 @@ public class BluetoothMatchActivity extends AppCompatActivity {
 
     private void initializeSudokuData() {
         sudokuData = new int[9][9];
+        fixedCells = 0; // 重置固定单元格计数
 
         // 初始化所有格子为0（空白）
         for (int i = 0; i < 9; i++) {
@@ -421,16 +448,20 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         }
 
         // 根据预定义值设置谜题
-        for (int[] predefined : predefinedValues) {
-            int row = predefined[0];
-            int col = predefined[1];
-            int value = predefined[2];
-            sudokuData[row][col] = value;
-            fixedCells++;
+        if (predefinedValues != null) {
+            for (int[] predefined : predefinedValues) {
+                int row = predefined[0];
+                int col = predefined[1];
+                int value = predefined[2];
+                sudokuData[row][col] = value;
+                fixedCells++;
+            }
         }
 
         // 生成与预填数字匹配的解决方案
-        fullSolution = SudokuGenerator.generateSolutionForPuzzle(predefinedValues);
+        if (predefinedValues != null) {
+            fullSolution = SudokuGenerator.generateSolutionForPuzzle(predefinedValues);
+        }
 
         filledCells = fixedCells;
     }
