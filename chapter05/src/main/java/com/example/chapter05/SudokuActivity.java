@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -43,7 +44,10 @@ public class SudokuActivity extends AppCompatActivity {
     private int[][] fullSolution; // 存储完整解决方案
     // 预填数字的位置
     private int[][] predefinedValues;
-
+    // 在类变量中添加
+    private boolean isNoteMode = false;
+    private ToggleButton btnNoteToggle;
+    private int[][][] noteData = new int[9][9][9]; // 存储每个格子的笔记数字
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -137,6 +141,7 @@ public class SudokuActivity extends AppCompatActivity {
         // 重新开始计时
         startTimer();
     }
+    // 修改createSudokuGrid方法，在创建格子时考虑笔记
     private void createSudokuGrid() {
         sudokuGrid.removeAllViews();
 
@@ -162,18 +167,25 @@ public class SudokuActivity extends AppCompatActivity {
                     cellView.setTextColor(Color.BLACK);
                     cellView.setTag("fixed");
                 } else {
-                    cellView.setText("");
+                    // 显示笔记（如果有）
+                    StringBuilder notes = new StringBuilder();
+                    for (int i = 0; i < 9; i++) {
+                        if (noteData[row][col][i] != 0) {
+                            notes.append(noteData[row][col][i]);
+                        }
+                    }
+                    if (notes.length() > 0) {
+                        cellView.setText(notes.toString());
+                        cellView.setTextSize(12);
+                    } else {
+                        cellView.setText("");
+                    }
                     cellView.setTextColor(Color.BLUE);
                 }
 
                 final int finalRow = row;
                 final int finalCol = col;
-                cellView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        onCellSelected(finalRow, finalCol);
-                    }
-                });
+                cellView.setOnClickListener(v -> onCellSelected(finalRow, finalCol));
 
                 cellViews.put(row + "_" + col, cellView);
                 sudokuGrid.addView(cellView);
@@ -241,8 +253,32 @@ public class SudokuActivity extends AppCompatActivity {
                     .setNegativeButton("取消", null)
                     .show();
         });
-    }
+        // 笔记模式开关按钮
+        btnNoteToggle = findViewById(R.id.btn_note_toggle);
+        btnNoteToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isNoteMode = isChecked;
+            if (!isChecked) {
+                clearAllNotes();
+            }
+            Toast.makeText(this, "笔记模式已" + (isChecked ? "开启" : "关闭"),
+                    Toast.LENGTH_SHORT).show();
+        });
 
+    }
+    // 添加笔记相关方法
+    private void clearAllNotes() {
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                if (sudokuData[i][j] == 0) { // 只清空白格子的笔记
+                    TextView cell = cellViews.get(i + "_" + j);
+                    if (cell != null && !"fixed".equals(cell.getTag())) {
+                        cell.setText("");
+                    }
+                }
+            }
+        }
+        noteData = new int[9][9][9];
+    }
     // 显示完整解决方案
     private void showFullSolution() {
         if (fullSolution == null) return;
@@ -363,6 +399,7 @@ public class SudokuActivity extends AppCompatActivity {
         }
     }
 
+    // 修改onNumberSelected方法
     private void onNumberSelected(int number) {
         if (selectedRow == -1 || selectedCol == -1) {
             Toast.makeText(this, "请先选择一个格子", Toast.LENGTH_SHORT).show();
@@ -371,28 +408,56 @@ public class SudokuActivity extends AppCompatActivity {
 
         TextView cell = cellViews.get(selectedRow + "_" + selectedCol);
         if (cell != null && !"fixed".equals(cell.getTag())) {
-            // 检查输入是否有效
-            if (isValidMove(selectedRow, selectedCol, number)) {
-                // 有效输入
-                cell.setText(String.valueOf(number));
-                sudokuData[selectedRow][selectedCol] = number;
-                cell.setTextColor(Color.BLUE);
-                filledCells++;
-
-                // 检查是否完成游戏
-                if (filledCells == TOTAL_CELLS) {
-                    checkGameCompletion();
+            if (isNoteMode) {
+                // 笔记模式处理
+                if (noteData[selectedRow][selectedCol][number - 1] == 0) {
+                    noteData[selectedRow][selectedCol][number - 1] = number;
+                    // 显示所有笔记数字
+                    StringBuilder notes = new StringBuilder();
+                    for (int i = 0; i < 9; i++) {
+                        if (noteData[selectedRow][selectedCol][i] != 0) {
+                            notes.append(noteData[selectedRow][selectedCol][i]);
+                        }
+                    }
+                    cell.setText(notes.toString());
+                    cell.setTextSize(12); // 小字号显示笔记
+                } else {
+                    noteData[selectedRow][selectedCol][number - 1] = 0;
+                    // 更新显示
+                    StringBuilder notes = new StringBuilder();
+                    for (int i = 0; i < 9; i++) {
+                        if (noteData[selectedRow][selectedCol][i] != 0) {
+                            notes.append(noteData[selectedRow][selectedCol][i]);
+                        }
+                    }
+                    cell.setText(notes.toString());
+                    if (notes.length() == 0) {
+                        cell.setText("");
+                        cell.setTextSize(20); // 恢复普通字号
+                    }
                 }
             } else {
-                // 无效输入
-                errorCount++;
-                updateErrorDisplay();
+                // 正常模式处理（原有逻辑）
+                if (isValidMove(selectedRow, selectedCol, number)) {
+                    cell.setText(String.valueOf(number));
+                    sudokuData[selectedRow][selectedCol] = number;
+                    cell.setTextColor(Color.BLUE);
+                    cell.setTextSize(20); // 恢复普通字号
+                    filledCells++;
 
-                if (errorCount >= MAX_ERRORS) {
-                    gameOver();
+                    if (filledCells == TOTAL_CELLS) {
+                        checkGameCompletion();
+                    }
                 } else {
-                    Toast.makeText(this, "输入错误！剩余机会: " + (MAX_ERRORS - errorCount),
-                            Toast.LENGTH_SHORT).show();
+                    errorCount++;
+                    updateErrorDisplay();
+
+                    if (errorCount >= MAX_ERRORS) {
+                        gameOver();
+                    } else {
+                        Toast.makeText(this, "输入错误！剩余机会: " + (MAX_ERRORS - errorCount),
+                                Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         }
