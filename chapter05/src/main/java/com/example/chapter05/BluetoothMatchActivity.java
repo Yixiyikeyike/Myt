@@ -405,10 +405,10 @@ public class BluetoothMatchActivity extends AppCompatActivity {
     private void updateGameInfo() {
         runOnUiThread(() -> {
             tvGameSeed.setText("随机种子: " + (gameSeed == 0 ? "未生成" : gameSeed));
-            tvMyProgress.setText("我的进度: " + myProgress + "/81");
+            tvMyProgress.setText("我的进度: " + filledCells + "/81");
             tvOpponentProgress.setText("对方进度: " + opponentProgress + "/81");
-            tvMyStars.setText("我的星星: ☆" + myStars);
-            tvOpponentStars.setText("对方星星: ☆" + opponentStars);
+            tvMyStars.setText("我的星星: ☆" + (MAX_ERRORS - errorCount));
+            tvOpponentStars.setText("对方星星: ☆" + (MAX_ERRORS - opponentErrorCount));
         });
     }
 
@@ -457,6 +457,7 @@ public class BluetoothMatchActivity extends AppCompatActivity {
     private void initializeSudokuData() {
         sudokuData = new int[9][9];
         fixedCells = 0; // 重置固定单元格计数
+        opponentProgress = 0; // 初始化对手进度
 
         // 初始化所有格子为0（空白）
         for (int i = 0; i < 9; i++) {
@@ -612,7 +613,20 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         TextView cell = cellViews.get(selectedRow + "_" + selectedCol);
         if (cell != null && !"fixed".equals(cell.getTag())) {
             if (isValidMove(selectedRow, selectedCol, number)) {
-                // 有效输入...
+                // 更新自己的UI
+                cell.setText(String.valueOf(number));
+                cell.setTextColor(Color.BLUE);
+                sudokuData[selectedRow][selectedCol] = number;
+                filledCells++;
+
+                // 更新进度显示
+                myProgress = filledCells;
+                updateGameInfo();
+
+                // 检查游戏是否完成
+                checkGameCompletion();
+
+                // 发送移动消息给对手
                 sendMessage("MOVE|" + selectedRow + "," + selectedCol + "," + number);
             } else {
                 // 无效输入
@@ -878,15 +892,13 @@ public class BluetoothMatchActivity extends AppCompatActivity {
     public void onOpponentMove(int row, int col, int number) {
         runOnUiThread(() -> {
             TextView cell = cellViews.get(row + "_" + col);
-            if (cell != null && !"fixed".equals(cell.getTag())) {
+            if (cell != null && !"fixed".equals(cell.getTag()) && sudokuData[row][col] == 0) {
                 cell.setText(String.valueOf(number));
                 cell.setTextColor(Color.GREEN);
                 sudokuData[row][col] = number;
-                filledCells++;
+                opponentProgress++; // 更新对手进度
 
-                if (filledCells == TOTAL_CELLS) {
-                    checkGameCompletion();
-                }
+                updateGameInfo();
             }
         });
     }
