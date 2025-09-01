@@ -10,6 +10,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import generator.SudokuGenerator;
+
 public class SharedPreferencesUtil {
     private static final String PREFS_NAME = "SudokuPrefs";
     private static final String KEY_USERNAME = "username";
@@ -127,20 +129,45 @@ public class SharedPreferencesUtil {
 
     // 保存游戏状态
     public static void saveGameState(Context context, int[][] sudokuData, int[][] noteData,
-                                     int errorCount, int filledCells, long elapsedTime, int hintCount) {
+                                     int errorCount, int filledCells, long elapsedTime,
+                                     int hintCount, int[][] fullSolution) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
 
-        // 将游戏数据转换为JSON字符串
+        // 统一使用Gson转换所有数组数据
         Gson gson = new Gson();
         editor.putString(KEY_SAVED_GAME + "_sudoku", gson.toJson(sudokuData));
         editor.putString(KEY_SAVED_GAME + "_notes", gson.toJson(noteData));
+
+        // 确保fullSolution总是被保存
+        if (fullSolution == null) {
+            // 如果没有解决方案，生成一个新的
+            fullSolution = generateNewSolution(context, sudokuData);
+        }
+        editor.putString(KEY_SAVED_GAME + "_solution", gson.toJson(fullSolution));
+
         editor.putInt(KEY_SAVED_GAME + "_errors", errorCount);
         editor.putInt(KEY_SAVED_GAME + "_filled", filledCells);
         editor.putLong(KEY_SAVED_GAME + "_time", elapsedTime);
-        editor.putInt(KEY_SAVED_GAME + "_hints", hintCount); // 添加这行
+        editor.putInt(KEY_SAVED_GAME + "_hints", hintCount);
 
         editor.apply();
+    }
+
+    // 辅助方法：根据当前数独数据生成解决方案
+    private static int[][] generateNewSolution(Context context, int[][] sudokuData) {
+        // 这里需要实现根据当前数独数据生成解决方案的逻辑
+        // 你可以调用SudokuGenerator中的相关方法
+        // 例如：
+        List<int[]> predefinedValues = new ArrayList<>();
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                if (sudokuData[i][j] != 0) {
+                    predefinedValues.add(new int[]{i, j, sudokuData[i][j]});
+                }
+            }
+        }
+        return SudokuGenerator.generateSolutionForPuzzle(predefinedValues.toArray(new int[0][]));
     }
 
     // 检查是否有保存的游戏
@@ -152,21 +179,27 @@ public class SharedPreferencesUtil {
     // 加载游戏状态
     public static SavedGameState loadGameState(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-
         Gson gson = new Gson();
-        String sudokuJson = prefs.getString(KEY_SAVED_GAME + "_sudoku", "");
-        String notesJson = prefs.getString(KEY_SAVED_GAME + "_notes", "");
-
         Type type = new TypeToken<int[][]>(){}.getType();
-        int[][] sudokuData = gson.fromJson(sudokuJson, type);
-        int[][] noteData = gson.fromJson(notesJson, type);
 
-        int errorCount = prefs.getInt(KEY_SAVED_GAME + "_errors", 0);
-        int filledCells = prefs.getInt(KEY_SAVED_GAME + "_filled", 0);
-        long elapsedTime = prefs.getLong(KEY_SAVED_GAME + "_time", 0);
-        int hintCount = prefs.getInt(KEY_SAVED_GAME + "_hints", 0); // 添加这行
+        // 添加空值检查
+        String sudokuJson = prefs.getString(KEY_SAVED_GAME + "_sudoku", null);
+        String notesJson = prefs.getString(KEY_SAVED_GAME + "_notes", null);
+        String solutionJson = prefs.getString(KEY_SAVED_GAME + "_solution", null);
 
-        return new SavedGameState(sudokuData, noteData, errorCount, filledCells, elapsedTime, hintCount);
+        int[][] sudokuData = sudokuJson != null ? gson.fromJson(sudokuJson, type) : new int[9][9];
+        int[][] noteData = notesJson != null ? gson.fromJson(notesJson, type) : new int[9][9];
+        int[][] fullSolution = solutionJson != null ? gson.fromJson(solutionJson, type) : null;
+
+        return new SavedGameState(
+                sudokuData,
+                noteData,
+                prefs.getInt(KEY_SAVED_GAME + "_errors", 0),
+                prefs.getInt(KEY_SAVED_GAME + "_filled", 0),
+                prefs.getLong(KEY_SAVED_GAME + "_time", 0),
+                prefs.getInt(KEY_SAVED_GAME + "_hints", 0),
+                fullSolution
+        );
     }
 
     // 清除保存的游戏
@@ -179,6 +212,8 @@ public class SharedPreferencesUtil {
         editor.remove(KEY_SAVED_GAME + "_errors");
         editor.remove(KEY_SAVED_GAME + "_filled");
         editor.remove(KEY_SAVED_GAME + "_time");
+        editor.remove(KEY_SAVED_GAME + "_hints");
+        editor.remove(KEY_SAVED_GAME + "_solution");
 
         editor.apply();
     }
@@ -191,15 +226,19 @@ public class SharedPreferencesUtil {
         public int filledCells;
         public long elapsedTime;
         public int hintCount; // 添加这个字段
+        // 在SavedGameState类中添加
+        public int[][] fullSolution;
 
+        // 修改构造函数
         public SavedGameState(int[][] sudokuData, int[][] noteData, int errorCount,
-                              int filledCells, long elapsedTime, int hintCount) { // 修改构造函数
+                              int filledCells, long elapsedTime, int hintCount, int[][] fullSolution) {
             this.sudokuData = sudokuData;
             this.noteData = noteData;
             this.errorCount = errorCount;
             this.filledCells = filledCells;
             this.elapsedTime = elapsedTime;
-            this.hintCount = hintCount; // 添加这行
+            this.hintCount = hintCount;
+            this.fullSolution = fullSolution;
         }
     }
 }

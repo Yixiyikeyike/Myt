@@ -18,8 +18,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -138,8 +140,10 @@ public class SudokuActivity extends AppCompatActivity {
             fixedCells++;
         }
 
-        // 生成与预填数字匹配的解决方案
-        fullSolution = SudokuGenerator.generateSolutionForPuzzle(predefinedValues);
+        // 如果fullSolution为null，生成一个新的解决方案
+        if (fullSolution == null) {
+            fullSolution = SudokuGenerator.generateSolutionForPuzzle(predefinedValues);
+        }
 
         filledCells = fixedCells;
     }
@@ -783,23 +787,21 @@ public class SudokuActivity extends AppCompatActivity {
     }
     // 添加保存游戏方法
     private void saveGame() {
-        // 计算已用时间
         long currentElapsed = SystemClock.elapsedRealtime() - startTime;
 
-        // 将3D笔记数据转换为2D数组（简化处理）
         int[][] simplifiedNotes = new int[9][9];
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
                 for (int k = 0; k < 9; k++) {
                     if (noteData[i][j][k] != 0) {
-                        simplifiedNotes[i][j] |= (1 << k); // 使用位掩码简化存储
+                        simplifiedNotes[i][j] |= (1 << k);
                     }
                 }
             }
         }
 
         SharedPreferencesUtil.saveGameState(this, sudokuData, simplifiedNotes,
-                errorCount, filledCells, currentElapsed + elapsedTime, hintCount); // 添加hintCount参数
+                errorCount, filledCells, currentElapsed + elapsedTime, hintCount, fullSolution);
 
         Toast.makeText(this, "游戏已保存", Toast.LENGTH_SHORT).show();
     }
@@ -813,7 +815,22 @@ public class SudokuActivity extends AppCompatActivity {
             errorCount = savedState.errorCount;
             filledCells = savedState.filledCells;
             elapsedTime = savedState.elapsedTime;
-            hintCount = savedState.hintCount; // 恢复提示数量
+            hintCount = savedState.hintCount;
+            fullSolution = savedState.fullSolution; // 加载完整解决方案
+
+            // 如果加载的解决方案为null，生成一个新的
+            if (fullSolution == null) {
+                List<int[]> predefinedValues = new ArrayList<>();
+                for (int i = 0; i < 9; i++) {
+                    for (int j = 0; j < 9; j++) {
+                        if (sudokuData[i][j] != 0) {
+                            predefinedValues.add(new int[]{i, j, sudokuData[i][j]});
+                        }
+                    }
+                }
+                fullSolution = SudokuGenerator.generateSolutionForPuzzle(
+                        predefinedValues.toArray(new int[0][]));
+            }
 
             // 恢复笔记数据
             int[][] simplifiedNotes = savedState.noteData;
@@ -830,12 +847,9 @@ public class SudokuActivity extends AppCompatActivity {
                 }
             }
 
-            // 更新UI
             createSudokuGrid();
             updateErrorDisplay();
-            updateHintButtonDisplay(); // 更新提示按钮显示
-
-            // 恢复计时器
+            updateHintButtonDisplay();
             startTime = SystemClock.elapsedRealtime() - elapsedTime;
 
             Toast.makeText(this, "游戏已加载", Toast.LENGTH_SHORT).show();
