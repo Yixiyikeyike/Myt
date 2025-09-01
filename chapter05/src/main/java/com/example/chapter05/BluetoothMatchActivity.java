@@ -7,6 +7,7 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.text.format.Formatter;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -488,20 +489,47 @@ public class BluetoothMatchActivity extends AppCompatActivity {
     private void createSudokuGrid() {
         sudokuGrid.removeAllViews();
 
+        // 设置网格背景为黑色
+        sudokuGrid.setBackgroundColor(Color.BLACK);
+
+        // 获取屏幕宽度，计算单元格大小
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int screenWidth = (int)(displayMetrics.widthPixels*0.9);
+        int padding = (int) (16 * getResources().getDisplayMetrics().density); // 转换为像素
+
+        // 计算可用宽度（减去左右padding）
+        int availableWidth = screenWidth - 2 * padding;
+
+        // 计算总网格线宽度（8条细线 + 2条粗线）
+        int totalGridLineWidth = 8 * 1 + 2 * 3;
+
+        // 计算单元格大小（确保所有单元格和网格线都能放下）
+        int cellSize = (availableWidth - totalGridLineWidth) / 9;
+
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
                 TextView cellView = new TextView(this);
 
                 GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-                params.width = 0;
-                params.height = 0;
-                params.rowSpec = GridLayout.spec(row, 1, 1f);
-                params.columnSpec = GridLayout.spec(col, 1, 1f);
-                params.setMargins(1, 1, 1, 1);
-                cellView.setLayoutParams(params);
+                params.width = cellSize;
+                params.height = cellSize; // 确保高度和宽度相同，形成正方形
+                params.rowSpec = GridLayout.spec(row);
+                params.columnSpec = GridLayout.spec(col);
 
+                // 设置边距来创建网格线效果
+                int leftMargin = (col % 3 == 0) ? 3 : 1;    // 九宫格左边加粗
+                int topMargin = (row % 3 == 0) ? 3 : 1;     // 九宫格上边加粗
+                int rightMargin = (col % 3 == 2) ? 3 : 1;   // 九宫格右边加粗
+                int bottomMargin = (row % 3 == 2) ? 3 : 1;  // 九宫格下边加粗
+
+                params.setMargins(leftMargin, topMargin, rightMargin, bottomMargin);
+
+                cellView.setLayoutParams(params);
                 cellView.setGravity(Gravity.CENTER);
                 cellView.setTextSize(20);
+
+                // 设置单元格背景为白色
                 cellView.setBackgroundColor(Color.WHITE);
 
                 int value = sudokuData[row][col];

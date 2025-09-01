@@ -187,18 +187,18 @@
         <!-- 数独网格 -->
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="350dp"
+            android:layout_height="0dp"
             android:layout_weight="1"
             android:paddingHorizontal="16dp">
 
             <GridLayout
                 android:id="@+id/sudoku_grid"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:rowCount="9"
                 android:columnCount="9"
                 android:background="#000000"
-                android:padding="2dp"/>
+                android:layout_gravity="center"/>
         </FrameLayout>
 
         <!-- 数字选择按钮 -->
@@ -290,6 +290,12 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="返回"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center">
             <ToggleButton
                 android:id="@+id/btn_note_toggle"
                 android:layout_width="wrap_content"
