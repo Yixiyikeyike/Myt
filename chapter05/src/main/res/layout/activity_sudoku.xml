@@ -182,16 +182,16 @@
                 android:layout_weight="1"
                 android:layout_margin="4dp"
                 android:text="作弊"
-                android:textSize="16sp"/>
+                android:textSize="14sp"/>
 
             <Button
                 android:id="@+id/btn_hint_close"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_margin="4dp"
                 android:text="作弊关闭"
-                android:textSize="16sp"/>
+                android:textSize="14sp"/>
 
             <Button
                 android:id="@+id/btn_return"
@@ -199,8 +199,8 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:layout_margin="4dp"
-                android:text="返回主界面"
-                android:textSize="16sp"
+                android:text="返回"
+                android:textSize="14sp"
                 android:backgroundTint="#FF5722"/>
             <Button
                 android:id="@+id/btn_save_game"
