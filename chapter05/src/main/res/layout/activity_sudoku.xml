@@ -60,18 +60,18 @@
         <!-- 数独网格容器 -->
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_weight="1"
             android:paddingHorizontal="16dp">
 
             <GridLayout
                 android:id="@+id/sudoku_grid"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:rowCount="9"
                 android:columnCount="9"
-                android:background="@color/grid_background"
-                android:padding="4dp"/>
+                android:background="#000000"
+                android:layout_gravity="center"/>
         </FrameLayout>
 
         <!-- 数字选择按钮 -->
