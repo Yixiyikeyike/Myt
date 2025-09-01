@@ -100,6 +100,10 @@ public class BluetoothMatchActivity extends AppCompatActivity {
     private boolean isNoteMode = false;
     private ToggleButton btnNoteToggle;
     private int[][][] noteData = new int[9][9][9]; // 存储每个格子的笔记数字
+    // 提示相关变量
+    private int hintCount = 0;
+    private final int MAX_HINTS = 3;
+    private Button btnSingleHint;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,6 +146,8 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         opponentErrorText = findViewById(R.id.opponent_error_text);
         statusText = findViewById(R.id.status_text);
         sudokuGrid = findViewById(R.id.sudoku_grid);
+        // 初始化提示按钮
+        btnSingleHint = findViewById(R.id.btn_single_hint);
 
         // 添加数字按钮初始化
         numberButtons = new Button[9];
@@ -154,6 +160,7 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         numberButtons[6] = findViewById(R.id.btn_7);
         numberButtons[7] = findViewById(R.id.btn_8);
         numberButtons[8] = findViewById(R.id.btn_9);
+
 
         // 添加功能按钮初始化
         findViewById(R.id.btn_hint);
@@ -549,6 +556,40 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         }
     }
     private void setupFunctionButtons() {
+
+        // 单个提示按钮
+        btnSingleHint = findViewById(R.id.btn_single_hint);
+        btnSingleHint.setOnClickListener(v -> {
+            if (hintCount >= MAX_HINTS) {
+                Toast.makeText(this, "提示次数已用完", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (selectedRow == -1 || selectedCol == -1) {
+                Toast.makeText(this, "请先选择一个格子", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // 检查是否是预填格子
+            TextView cell = cellViews.get(selectedRow + "_" + selectedCol);
+            if (cell != null && "fixed".equals(cell.getTag())) {
+                Toast.makeText(this, "不能提示预填格子", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // 检查格子是否已填
+            if (sudokuData[selectedRow][selectedCol] != 0) {
+                Toast.makeText(this, "格子已填写", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // 使用提示
+            useSingleHint();
+        });
+
+// 更新提示按钮显示
+        updateHintButtonDisplay();
+
         // 笔记模式开关按钮
         btnNoteToggle = findViewById(R.id.btn_note_toggle);
         btnNoteToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -978,14 +1019,15 @@ public class BluetoothMatchActivity extends AppCompatActivity {
             TextView cell = cellViews.get(row + "_" + col);
             if (cell != null && !"fixed".equals(cell.getTag()) && sudokuData[row][col] == 0) {
                 cell.setText(String.valueOf(number));
-                cell.setTextColor(Color.GREEN);
+                // 如果是提示的格子，显示绿色，否则显示蓝色
+                cell.setTextColor(cell.getTextColors().getDefaultColor() == Color.GREEN ?
+                        Color.GREEN : Color.BLUE);
                 sudokuData[row][col] = number;
-                opponentFilledCells++; // 只增加对方填的格子数
-                filledCells++; // 总填充格子数（用于游戏完成检查）
+                opponentFilledCells++;
+                filledCells++;
 
                 updateGameInfo();
 
-                // 添加游戏完成检查
                 if (isSudokuComplete()) {
                     checkGameCompletion();
                 }
@@ -1036,5 +1078,42 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         }
         noteData = new int[9][9][9];
     }
+
+    // 使用单个提示
+    private void useSingleHint() {
+        if (fullSolution == null || selectedRow == -1 || selectedCol == -1) {
+            return;
+        }
+
+        int correctValue = fullSolution[selectedRow][selectedCol];
+        TextView cell = cellViews.get(selectedRow + "_" + selectedCol);
+
+        if (cell != null) {
+            cell.setText(String.valueOf(correctValue));
+            cell.setTextColor(Color.GREEN); // 用绿色表示提示
+            cell.setTextSize(20);
+            sudokuData[selectedRow][selectedCol] = correctValue;
+            myFilledCells++;
+            filledCells++;
+
+            hintCount++;
+            updateHintButtonDisplay();
+
+            // 发送移动消息给对手
+            sendMessage("MOVE|" + selectedRow + "," + selectedCol + "," + correctValue);
+
+            // 检查游戏是否完成
+            checkGameCompletion();
+        }
+    }
+
+    // 更新提示按钮显示
+    private void updateHintButtonDisplay() {
+        runOnUiThread(() -> {
+            btnSingleHint.setText("提示 (" + (MAX_HINTS - hintCount) + ")");
+        });
+    }
+
+
 
 }

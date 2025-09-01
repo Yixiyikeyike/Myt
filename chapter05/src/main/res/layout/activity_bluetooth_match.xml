@@ -297,6 +297,12 @@
                 android:textOff="笔记模式"
                 android:textOn="笔记模式"
                 android:checked="false"/>
+            <Button
+                android:id="@+id/btn_single_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="提示 (3)"
+                android:layout_margin="5dp"/>
         </LinearLayout>
     </LinearLayout>
 </ScrollView>
