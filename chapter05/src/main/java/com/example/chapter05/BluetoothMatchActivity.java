@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -95,47 +96,10 @@ public class BluetoothMatchActivity extends AppCompatActivity {
     private int opponentFilledCells = 0; // 对方填的格子数
     private boolean isGameEnded = false; // 添加这个变量，用于标记游戏是否已结束
 
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_bluetooth_match);
-//
-//        // 获取蓝牙对战参数
-//        Intent intent = getIntent();
-//        sharedSeed = intent.getLongExtra("seed", System.currentTimeMillis());
-//        isHost = intent.getBooleanExtra("isHost", false);
-//
-//        initViews();
-//        setupViews();
-//        setupListeners();
-//
-//        // 初始化UI组件
-//        initViews();
-//
-//        // 使用共享种子生成数独谜题
-//        predefinedValues = SudokuGenerator.generatePredefinedValuesWithSeed(2, sharedSeed);
-//
-//        // 初始化数独数据
-//        initializeSudokuData();
-//
-//        // 创建数独网格
-//        createSudokuGrid();
-//
-//        // 设置数字按钮
-//        setupNumberButtons();
-//
-//        // 设置功能按钮
-//        setupFunctionButtons();
-//
-//        // 开始计时
-//        startTimer();
-//
-//        // 更新错误计数显示
-//        updateErrorDisplay();
-//
-//        // 设置对战状态显示
-//        updateStatusText(isHost ? "等待对手连接..." : "已连接到主机");
-//    }
+    // 笔记模式相关变量
+    private boolean isNoteMode = false;
+    private ToggleButton btnNoteToggle;
+    private int[][][] noteData = new int[9][9][9]; // 存储每个格子的笔记数字
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -483,11 +447,12 @@ public class BluetoothMatchActivity extends AppCompatActivity {
     // 修改 initializeSudokuData 方法：
     private void initializeSudokuData() {
         sudokuData = new int[9][9];
-        fixedCells = 0; // 重置固定单元格计数
-        myFilledCells = 0; // 重置自己填的格子数
-        opponentFilledCells = 0; // 重置对方填的格子数
-        filledCells = 0; // 重置总填充格子数
-        isGameEnded = false; // 重置游戏结束标志
+        fixedCells = 0;
+        myFilledCells = 0;
+        opponentFilledCells = 0;
+        filledCells = 0;
+        isGameEnded = false;
+        noteData = new int[9][9][9]; // 重置笔记数据
         // 初始化所有格子为0（空白）
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
@@ -538,18 +503,25 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                     cellView.setTextColor(Color.BLACK);
                     cellView.setTag("fixed");
                 } else {
-                    cellView.setText("");
+                    // 显示笔记（如果有）
+                    StringBuilder notes = new StringBuilder();
+                    for (int i = 0; i < 9; i++) {
+                        if (noteData[row][col][i] != 0) {
+                            notes.append(noteData[row][col][i]);
+                        }
+                    }
+                    if (notes.length() > 0) {
+                        cellView.setText(notes.toString());
+                        cellView.setTextSize(12);
+                    } else {
+                        cellView.setText("");
+                    }
                     cellView.setTextColor(Color.BLUE);
                 }
 
                 final int finalRow = row;
                 final int finalCol = col;
-                cellView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        onCellSelected(finalRow, finalCol);
-                    }
-                });
+                cellView.setOnClickListener(v -> onCellSelected(finalRow, finalCol));
 
                 cellViews.put(row + "_" + col, cellView);
                 sudokuGrid.addView(cellView);
@@ -577,6 +549,16 @@ public class BluetoothMatchActivity extends AppCompatActivity {
         }
     }
     private void setupFunctionButtons() {
+        // 笔记模式开关按钮
+        btnNoteToggle = findViewById(R.id.btn_note_toggle);
+        btnNoteToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isNoteMode = isChecked;
+            if (!isChecked) {
+                clearAllNotes();
+            }
+            Toast.makeText(this, "笔记模式已" + (isChecked ? "开启" : "关闭"),
+                    Toast.LENGTH_SHORT).show();
+        });
         // 提示按钮
         Button hintButton = findViewById(R.id.btn_hint);
         hintButton.setOnClickListener(new View.OnClickListener() {
@@ -641,35 +623,66 @@ public class BluetoothMatchActivity extends AppCompatActivity {
 
         TextView cell = cellViews.get(selectedRow + "_" + selectedCol);
         if (cell != null && !"fixed".equals(cell.getTag())) {
-            if (isValidMove(selectedRow, selectedCol, number)) {
-                // 更新自己的UI
-                cell.setText(String.valueOf(number));
-                cell.setTextColor(Color.BLUE);
-                sudokuData[selectedRow][selectedCol] = number;
-                myFilledCells++; // 只增加自己填的格子数
-                filledCells++; // 总填充格子数（用于游戏完成检查）
-
-                // 更新进度显示
-                updateGameInfo();
-
-                // 检查游戏是否完成
-                checkGameCompletion();
-
-                // 发送移动消息给对手
-                sendMessage("MOVE|" + selectedRow + "," + selectedCol + "," + number);
-            } else {
-                // 无效输入
-                errorCount++;
-                updateErrorDisplay();
-                // 发送错误计数给对手
-                sendMessage("ERROR|" + errorCount);
-
-                if (errorCount >= MAX_ERRORS) {
-                    gameOver(true); // 明确表示是主动失败
-                    return; // 添加return避免继续执行
+            if (isNoteMode) {
+                // 笔记模式处理
+                if (noteData[selectedRow][selectedCol][number - 1] == 0) {
+                    noteData[selectedRow][selectedCol][number - 1] = number;
+                    // 显示所有笔记数字
+                    StringBuilder notes = new StringBuilder();
+                    for (int i = 0; i < 9; i++) {
+                        if (noteData[selectedRow][selectedCol][i] != 0) {
+                            notes.append(noteData[selectedRow][selectedCol][i]);
+                        }
+                    }
+                    cell.setText(notes.toString());
+                    cell.setTextSize(12); // 小字号显示笔记
                 } else {
-                    Toast.makeText(this, "输入错误！剩余机会: " + (MAX_ERRORS - errorCount),
-                            Toast.LENGTH_SHORT).show();
+                    noteData[selectedRow][selectedCol][number - 1] = 0;
+                    // 更新显示
+                    StringBuilder notes = new StringBuilder();
+                    for (int i = 0; i < 9; i++) {
+                        if (noteData[selectedRow][selectedCol][i] != 0) {
+                            notes.append(noteData[selectedRow][selectedCol][i]);
+                        }
+                    }
+                    cell.setText(notes.toString());
+                    if (notes.length() == 0) {
+                        cell.setText("");
+                        cell.setTextSize(20); // 恢复普通字号
+                    }
+                }
+            } else {
+                // 正常模式处理（原有逻辑）
+                if (isValidMove(selectedRow, selectedCol, number)) {
+                    cell.setText(String.valueOf(number));
+                    cell.setTextColor(Color.BLUE);
+                    cell.setTextSize(20); // 恢复普通字号
+                    sudokuData[selectedRow][selectedCol] = number;
+                    myFilledCells++;
+                    filledCells++;
+
+                    // 更新进度显示
+                    updateGameInfo();
+
+                    // 检查游戏是否完成
+                    checkGameCompletion();
+
+                    // 发送移动消息给对手
+                    sendMessage("MOVE|" + selectedRow + "," + selectedCol + "," + number);
+                } else {
+                    // 无效输入
+                    errorCount++;
+                    updateErrorDisplay();
+                    // 发送错误计数给对手
+                    sendMessage("ERROR|" + errorCount);
+
+                    if (errorCount >= MAX_ERRORS) {
+                        gameOver(true);
+                        return;
+                    } else {
+                        Toast.makeText(this, "输入错误！剩余机会: " + (MAX_ERRORS - errorCount),
+                                Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         }
@@ -1007,6 +1020,21 @@ public class BluetoothMatchActivity extends AppCompatActivity {
                 }
             }).start();
         }
+    }
+
+    // 清除所有笔记
+    private void clearAllNotes() {
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                if (sudokuData[i][j] == 0) { // 只清空白格子的笔记
+                    TextView cell = cellViews.get(i + "_" + j);
+                    if (cell != null && !"fixed".equals(cell.getTag())) {
+                        cell.setText("");
+                    }
+                }
+            }
+        }
+        noteData = new int[9][9][9];
     }
 
 }

@@ -290,6 +290,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="返回"/>
+            <ToggleButton
+                android:id="@+id/btn_note_toggle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textOff="笔记模式"
+                android:textOn="笔记模式"
+                android:checked="false"/>
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

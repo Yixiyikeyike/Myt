@@ -32,6 +32,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.core:core-ktx:1.9.0") // 示例依赖
     implementation("com.google.code.gson:gson:2.10.1")
     implementation(libs.material)
     implementation(libs.activity)
