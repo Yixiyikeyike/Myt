@@ -8,4 +8,8 @@
     <color name="yellow_200">#FFF9C4</color>
     <color name="green">#4CAF50</color>
     <color name="red">#F44336</color>
+    <color name="dark_blue">#1976D2</color>
+    <color name="dark_red">#D32F2F</color>
+    <color name="grid_background">#424242</color>
+    <color name="cell_background">#FFFFFF</color>
 </resources>

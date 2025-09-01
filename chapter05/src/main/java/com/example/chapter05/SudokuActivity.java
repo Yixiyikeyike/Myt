@@ -2,6 +2,7 @@ package com.example.chapter05;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.Gravity;
@@ -14,6 +15,8 @@ import android.widget.ToggleButton;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -204,6 +207,9 @@ public class SudokuActivity extends AppCompatActivity {
     private void createSudokuGrid() {
         sudokuGrid.removeAllViews();
 
+        // 设置网格背景为深灰色
+        sudokuGrid.setBackgroundColor(ContextCompat.getColor(this, R.color.grid_background));
+
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
                 TextView cellView = new TextView(this);
@@ -213,12 +219,42 @@ public class SudokuActivity extends AppCompatActivity {
                 params.height = 0;
                 params.rowSpec = GridLayout.spec(row, 1, 1f);
                 params.columnSpec = GridLayout.spec(col, 1, 1f);
-                params.setMargins(1, 1, 1, 1);
-                cellView.setLayoutParams(params);
 
+                // 设置边距来创建网格线效果
+                int leftMargin = (col % 3 == 0) ? 4 : 1;    // 九宫格左边加粗（深蓝色）
+                int topMargin = (row % 3 == 0) ? 4 : 1;     // 九宫格上边加粗（深蓝色）
+                int rightMargin = (col % 3 == 2) ? 4 : 1;   // 九宫格右边加粗（深蓝色）
+                int bottomMargin = (row % 3 == 2) ? 4 : 1;  // 九宫格下边加粗（深蓝色）
+
+                params.setMargins(leftMargin, topMargin, rightMargin, bottomMargin);
+
+                cellView.setLayoutParams(params);
                 cellView.setGravity(Gravity.CENTER);
                 cellView.setTextSize(20);
-                cellView.setBackgroundColor(Color.WHITE);
+
+                // 设置单元格背景为白色
+                cellView.setBackgroundColor(ContextCompat.getColor(this, R.color.cell_background));
+
+                // 为单元格添加自定义边框
+                GradientDrawable border = new GradientDrawable();
+                border.setColor(ContextCompat.getColor(this, R.color.cell_background));
+//                border.setStroke(1, ContextCompat.getColor(this, R.color.dark_red)); // 细线条为深红色
+
+                // 为九宫格边界添加特殊边框（深蓝色加粗）
+//                if (col % 3 == 2) {
+//                    border.setStroke(3, ContextCompat.getColor(this, R.color.dark_blue)); // 右边加粗深蓝色
+//                }
+//                if (row % 3 == 2) {
+//                    border.setStroke(3, ContextCompat.getColor(this, R.color.dark_blue)); // 下边加粗深蓝色
+//                }
+//                if (col % 3 == 0) {
+//                    border.setStroke(3, ContextCompat.getColor(this, R.color.dark_blue)); // 左边加粗深蓝色
+//                }
+//                if (row % 3 == 0) {
+//                    border.setStroke(3, ContextCompat.getColor(this, R.color.dark_blue)); // 上边加粗深蓝色
+//                }
+
+                cellView.setBackground(border);
 
                 int value = sudokuData[row][col];
                 if (value != 0) {
@@ -226,7 +262,6 @@ public class SudokuActivity extends AppCompatActivity {
                     cellView.setTextColor(Color.BLACK);
                     cellView.setTag("fixed");
                 } else {
-                    // 显示笔记（如果有）
                     StringBuilder notes = new StringBuilder();
                     for (int i = 0; i < 9; i++) {
                         if (noteData[row][col][i] != 0) {

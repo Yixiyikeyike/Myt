@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 背景颜色 -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#FFFFFF"/>
+        </shape>
+    </item>
+
+    <!-- 右边框 - 普通线条 -->
+    <item android:right="1dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#000000"/>
+        </shape>
+    </item>
+
+    <!-- 下边框 - 普通线条 -->
+    <item android:bottom="1dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#000000"/>
+        </shape>
+    </item>
+
+    <!-- 右边框加粗 - 九宫格边界 -->
+    <item
+        android:right="3dp"
+        android:left="-2dp"
+        android:top="-2dp"
+        android:bottom="-2dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#000000"/>
+        </shape>
+    </item>
+
+    <!-- 下边框加粗 - 九宫格边界 -->
+    <item
+        android:bottom="3dp"
+        android:left="-2dp"
+        android:top="-2dp"
+        android:right="-2dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#000000"/>
+        </shape>
+    </item>
+</layer-list>

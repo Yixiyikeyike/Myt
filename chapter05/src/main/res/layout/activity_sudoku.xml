@@ -70,8 +70,8 @@
                 android:layout_height="match_parent"
                 android:rowCount="9"
                 android:columnCount="9"
-                android:background="#000000"
-                android:padding="2dp"/>
+                android:background="@color/grid_background"
+                android:padding="4dp"/>
         </FrameLayout>
 
         <!-- 数字选择按钮 -->
