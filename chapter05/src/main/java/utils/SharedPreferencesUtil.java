@@ -139,9 +139,8 @@ public class SharedPreferencesUtil {
         editor.putString(KEY_SAVED_GAME + "_sudoku", gson.toJson(sudokuData));
         editor.putString(KEY_SAVED_GAME + "_notes", gson.toJson(noteData));
 
-        // 确保fullSolution总是被保存
-        if (fullSolution == null) {
-            // 如果没有解决方案，生成一个新的
+        // 确保fullSolution总是有效
+        if (fullSolution == null || !isValidSolution(sudokuData, fullSolution)) {
             fullSolution = generateNewSolution(context, sudokuData);
         }
         editor.putString(KEY_SAVED_GAME + "_solution", gson.toJson(fullSolution));
@@ -152,6 +151,24 @@ public class SharedPreferencesUtil {
         editor.putInt(KEY_SAVED_GAME + "_hints", hintCount);
 
         editor.apply();
+    }
+
+    // 添加解决方案验证方法
+    private static boolean isValidSolution(int[][] puzzle, int[][] solution) {
+        if (solution == null || solution.length != 9 || solution[0].length != 9) {
+            return false;
+        }
+
+        // 检查解决方案是否与谜题一致
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                if (puzzle[i][j] != 0 && puzzle[i][j] != solution[i][j]) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     // 辅助方法：根据当前数独数据生成解决方案

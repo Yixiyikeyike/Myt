@@ -176,8 +176,40 @@ public class SudokuActivity extends AppCompatActivity {
         long seed = System.currentTimeMillis();
         predefinedValues = SudokuGenerator.generatePredefinedValuesWithSeed(difficulty, seed);
 
-        // 重置游戏
-        resetGame();
+        // 重置所有游戏状态
+        errorCount = 0;
+        filledCells = 0;
+        fixedCells = 0;
+        selectedRow = -1;
+        selectedCol = -1;
+        hintCount = 0;
+        isNoteMode = false;
+        noteData = new int[9][9][9];
+        elapsedTime = 0;
+        isGameLoaded = false;
+
+        // 更新UI状态
+        updateHintButtonDisplay();
+        if (btnNoteToggle != null) {
+            btnNoteToggle.setChecked(false);
+        }
+
+        // 重新初始化数据
+        initializeSudokuData();
+
+        // 重新创建网格
+        createSudokuGrid();
+
+        // 更新显示
+        updateErrorDisplay();
+
+        // 重新启用按钮
+        for (Button btn : numberButtons) {
+            btn.setEnabled(true);
+        }
+
+        // 重新开始计时
+        startTimer();
     }
 
     // 重置游戏
@@ -816,10 +848,11 @@ public class SudokuActivity extends AppCompatActivity {
             filledCells = savedState.filledCells;
             elapsedTime = savedState.elapsedTime;
             hintCount = savedState.hintCount;
-            fullSolution = savedState.fullSolution; // 加载完整解决方案
+            fullSolution = savedState.fullSolution;
 
-            // 如果加载的解决方案为null，生成一个新的
-            if (fullSolution == null) {
+            // 验证解决方案是否有效
+            if (fullSolution == null || !isSolutionValid(fullSolution)) {
+                // 生成新的解决方案
                 List<int[]> predefinedValues = new ArrayList<>();
                 for (int i = 0; i < 9; i++) {
                     for (int j = 0; j < 9; j++) {
