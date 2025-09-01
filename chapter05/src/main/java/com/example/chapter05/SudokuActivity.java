@@ -283,7 +283,7 @@ public class SudokuActivity extends AppCompatActivity {
             public void onClick(View v) {
                 showFullSolution();
                 //作弊按钮，直接判定获胜
-                gameWin();
+//                gameWin();
             }
         });
 
@@ -768,7 +768,7 @@ public class SudokuActivity extends AppCompatActivity {
         }
 
         SharedPreferencesUtil.saveGameState(this, sudokuData, simplifiedNotes,
-                errorCount, filledCells, currentElapsed + elapsedTime);
+                errorCount, filledCells, currentElapsed + elapsedTime, hintCount); // 添加hintCount参数
 
         Toast.makeText(this, "游戏已保存", Toast.LENGTH_SHORT).show();
     }
@@ -782,6 +782,7 @@ public class SudokuActivity extends AppCompatActivity {
             errorCount = savedState.errorCount;
             filledCells = savedState.filledCells;
             elapsedTime = savedState.elapsedTime;
+            hintCount = savedState.hintCount; // 恢复提示数量
 
             // 恢复笔记数据
             int[][] simplifiedNotes = savedState.noteData;
@@ -801,6 +802,7 @@ public class SudokuActivity extends AppCompatActivity {
             // 更新UI
             createSudokuGrid();
             updateErrorDisplay();
+            updateHintButtonDisplay(); // 更新提示按钮显示
 
             // 恢复计时器
             startTime = SystemClock.elapsedRealtime() - elapsedTime;

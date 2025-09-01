@@ -127,7 +127,7 @@ public class SharedPreferencesUtil {
 
     // 保存游戏状态
     public static void saveGameState(Context context, int[][] sudokuData, int[][] noteData,
-                                     int errorCount, int filledCells, long elapsedTime) {
+                                     int errorCount, int filledCells, long elapsedTime, int hintCount) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
 
@@ -138,6 +138,7 @@ public class SharedPreferencesUtil {
         editor.putInt(KEY_SAVED_GAME + "_errors", errorCount);
         editor.putInt(KEY_SAVED_GAME + "_filled", filledCells);
         editor.putLong(KEY_SAVED_GAME + "_time", elapsedTime);
+        editor.putInt(KEY_SAVED_GAME + "_hints", hintCount); // 添加这行
 
         editor.apply();
     }
@@ -163,8 +164,9 @@ public class SharedPreferencesUtil {
         int errorCount = prefs.getInt(KEY_SAVED_GAME + "_errors", 0);
         int filledCells = prefs.getInt(KEY_SAVED_GAME + "_filled", 0);
         long elapsedTime = prefs.getLong(KEY_SAVED_GAME + "_time", 0);
+        int hintCount = prefs.getInt(KEY_SAVED_GAME + "_hints", 0); // 添加这行
 
-        return new SavedGameState(sudokuData, noteData, errorCount, filledCells, elapsedTime);
+        return new SavedGameState(sudokuData, noteData, errorCount, filledCells, elapsedTime, hintCount);
     }
 
     // 清除保存的游戏
@@ -188,14 +190,16 @@ public class SharedPreferencesUtil {
         public int errorCount;
         public int filledCells;
         public long elapsedTime;
+        public int hintCount; // 添加这个字段
 
         public SavedGameState(int[][] sudokuData, int[][] noteData, int errorCount,
-                              int filledCells, long elapsedTime) {
+                              int filledCells, long elapsedTime, int hintCount) { // 修改构造函数
             this.sudokuData = sudokuData;
             this.noteData = noteData;
             this.errorCount = errorCount;
             this.filledCells = filledCells;
             this.elapsedTime = elapsedTime;
+            this.hintCount = hintCount; // 添加这行
         }
     }
 }
