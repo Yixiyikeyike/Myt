@@ -141,10 +141,47 @@ public class SudokuGenerator {
     }
 
     // 检查谜题是否有唯一解（简化版）
+// 检查数独谜题是否有唯一解
     private static boolean hasUniqueSolution(int[][] board) {
-        // 在实际应用中，这里应该实现完整的唯一性检查
-        // 为简化起见，我们假设大多数情况下都有唯一解
-        return true;
+        // 创建副本以避免修改原始板
+        int[][] boardCopy = new int[9][9];
+        for (int i = 0; i < 9; i++) {
+            System.arraycopy(board[i], 0, boardCopy[i], 0, 9);
+        }
+
+        // 尝试找到所有解决方案
+        return countSolutions(boardCopy, 0, 0) == 1;
+    }
+
+    // 递归计算数独解决方案的数量
+    private static int countSolutions(int[][] board, int row, int col) {
+        // 如果已经到达最后一行，找到一个解
+        if (row == 9) {
+            return 1;
+        }
+
+        // 如果到达列尾，转到下一行
+        if (col == 9) {
+            return countSolutions(board, row + 1, 0);
+        }
+
+        // 如果单元格已有数字，跳过
+        if (board[row][col] != 0) {
+            return countSolutions(board, row, col + 1);
+        }
+
+        int solutions = 0;
+
+        // 尝试1-9的数字
+        for (int num = 1; num <= 9 && solutions < 2; num++) {
+            if (isValid(board, row, col, num)) {
+                board[row][col] = num;
+                solutions += countSolutions(board, row, col + 1);
+                board[row][col] = 0; // 回溯
+            }
+        }
+
+        return solutions;
     }
 
     // 将数独板转换为预定义值格式
