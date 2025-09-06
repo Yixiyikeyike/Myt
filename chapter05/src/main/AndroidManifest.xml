@@ -25,9 +25,6 @@
             android:name=".BluetoothMatchFailedActivity"
             android:exported="false" />
         <activity
-            android:name=".HereIsNothingActivity"
-            android:exported="false" />
-        <activity
             android:name=".MultiplayerResultActivity"
             android:exported="false" />
         <activity
