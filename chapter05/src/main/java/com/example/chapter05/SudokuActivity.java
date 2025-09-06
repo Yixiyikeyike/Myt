@@ -163,6 +163,7 @@ public class SudokuActivity extends AppCompatActivity {
                 .show();
     }
     // 添加难度选择功能
+    // 修改setDifficulty方法
     public void setDifficulty(int difficulty) {
         // 验证难度值在有效范围内
         if (difficulty < 1 || difficulty > 3) {
@@ -175,6 +176,9 @@ public class SudokuActivity extends AppCompatActivity {
         // 使用随机种子生成新谜题
         long seed = System.currentTimeMillis();
         predefinedValues = SudokuGenerator.generatePredefinedValuesWithSeed(difficulty, seed);
+
+        // 修复bug: 生成新谜题对应的解决方案
+        fullSolution = SudokuGenerator.generateSolutionForPuzzle(predefinedValues);
 
         // 重置所有游戏状态
         errorCount = 0;
